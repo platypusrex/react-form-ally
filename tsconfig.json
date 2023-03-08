@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.options.json",
+  "files": [],
+  "references": [
+    {
+      "path": "packages/hook"
+    },
+    {
+      "path": "packages/yup-validator"
+    },
+    {
+      "path": "packages/zod-validator"
+    }
+  ]
+}

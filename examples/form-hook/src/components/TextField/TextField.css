@@ -1,0 +1,10 @@
+.text-input {
+  font-size: 1.6rem;
+  padding: 0.5em;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.text-input.error {
+  border-color: crimson;
+}

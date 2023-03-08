@@ -1,0 +1,22 @@
+.select {
+  display: block;
+  font-size: 1.6rem;
+  color: #444;
+  line-height: 1.3;
+  width: 100%;
+  max-width: 100%;
+  height: 40px;
+  box-sizing: border-box;
+  margin: 0;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 4px;
+}
+
+.select.error {
+  border-color: crimson;
+}
+
+.select option {
+  font-weight:normal;
+}
