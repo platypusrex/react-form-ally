@@ -39,7 +39,7 @@ export const App = () => {
         </Button>
       </div>
       <SelectField
-        style={{ marginTop: 25 }}
+        style={{ paddingBottom: 15, marginTop: 15 }}
         label="Validation type"
         id="validationType"
         {...registerField('validationType')}

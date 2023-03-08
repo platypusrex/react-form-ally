@@ -42,7 +42,7 @@ interface ZodValidationFormProps {
 }
 
 export const ZodValidatorForm: React.FC<ZodValidationFormProps> = ({ type, debounce }) => {
-  const { registerField, errors, onSubmit, onReset, valid, setValues } = useForm<
+  const { registerField, errors, onSubmit, onReset, valid, setValue } = useForm<
     z.infer<typeof schema>
   >({
     initialValues,
@@ -54,7 +54,7 @@ export const ZodValidatorForm: React.FC<ZodValidationFormProps> = ({ type, debou
   });
 
   useEffect(() => {
-    setValues({ name: 'Frank' });
+    setValue('name', 'Frank');
   }, []);
 
   const handleSubmit = (formValues: z.infer<typeof schema>) => {

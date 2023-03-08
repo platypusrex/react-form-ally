@@ -47,7 +47,7 @@ interface ValidationFormProps {
 }
 
 export const ValidatorForm: React.FC<ValidationFormProps> = ({ type, debounce }) => {
-  const { registerField, errors, onSubmit, onReset, valid, setValue } = useForm<FormValues>({
+  const { registerField, errors, onSubmit, onReset, valid, setValues } = useForm<FormValues>({
     initialValues,
     validation: {
       type,
@@ -57,7 +57,7 @@ export const ValidatorForm: React.FC<ValidationFormProps> = ({ type, debounce })
   });
 
   useEffect(() => {
-    setValue('name', 'Frank');
+    setValues({ name: 'Frank' });
   }, []);
 
   const handleSubmit = (formValues: FormValues) => {

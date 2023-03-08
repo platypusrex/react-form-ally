@@ -167,9 +167,10 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
 
   /* --------------Form and field utils-------------- */
   const setValue: SetValue<TValues, keyof TValues> = (name, value, shouldValidate = true) => {
-    dispatch({ type: 'change', payload: { [name]: value } });
+    const formValue = { [name]: value } as TValues;
+    dispatch({ type: 'change', payload: formValue });
     if (validation && shouldValidate) {
-      const { errors: validationErrors } = validation.schema(values as TValues);
+      const { errors: validationErrors } = validation.schema(formValue);
       validationErrors?.[name] &&
         dispatch({ type: 'validate', payload: { [name]: validationErrors[name] } });
     }
