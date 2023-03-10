@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch } from 'react';
-import { isEqualObj, debounce, getDebounceTimers } from '../utils';
+import { isEqualObj, debounce, getDebounceTimers, getValidationType } from '../utils';
 import type {
   ChangeValidation,
   DebounceValidationFn,
   FormAction,
   FormValues,
   Validation,
-  ValidationFn
-} from "../types";
-import { getValidationType } from "../utils/getValidationType";
+  ValidationFn,
+} from '../types';
 
 export const useDebouncedValidation = <TValues extends FormValues<any>>(
   validation: Validation<TValues> | undefined,
