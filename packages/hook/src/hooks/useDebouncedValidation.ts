@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch } from 'react';
 import { isEqualObj, debounce, getDebounceTimers } from '../utils';
 import type {
+  ChangeValidation,
   DebounceValidationFn,
   FormAction,
   FormValues,
   Validation,
-  ValidationFn,
-} from '../types';
+  ValidationFn
+} from "../types";
+import { getValidationType } from "../utils/getValidationType";
 
 export const useDebouncedValidation = <TValues extends FormValues<any>>(
   validation: Validation<TValues> | undefined,
@@ -15,13 +17,13 @@ export const useDebouncedValidation = <TValues extends FormValues<any>>(
 ) => {
   const getFieldValidationDebounceFns = useCallback(
     (validation?: Validation<TValues>): undefined | DebounceValidationFn<TValues> => {
-      if (!validation || validation.type !== 'change') return;
+      if (!validation || getValidationType(validation.type) !== 'change') return;
 
       const validationFn: ValidationFn<TValues> = (fieldName, error) => {
         dispatch({ type: 'validate', payload: { [fieldName]: error } });
       };
 
-      const { debounce: fieldDebounce } = validation;
+      const { debounce: fieldDebounce } = validation as ChangeValidation<TValues>;
       const debounceTimers = getDebounceTimers(fieldDebounce);
 
       return {

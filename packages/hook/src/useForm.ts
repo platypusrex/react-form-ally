@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useReducer } from 'react';
 import type { ChangeEventHandler, FocusEventHandler, FormEvent } from 'react';
 import { useDebouncedValidation, useEventCallback } from './hooks';
+import { getValidationType } from './utils';
 import type {
   FormAction,
   FormErrors,
@@ -40,9 +41,6 @@ const reducer = <TValues extends FormValues<any>>(
         ...state,
         errors: action.payload,
       };
-    case 'clear_error':
-      delete state.errors[action.payload];
-      return state;
     case 'reset':
       return { ...state, ...action.payload };
     case 'submit':
@@ -137,7 +135,7 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
   const onSubmit = useEventCallback((handler: (formValues: TValues) => void) => (e: FormEvent) => {
     e.preventDefault();
 
-    if (validation && validation.type === 'submit') {
+    if (validation && getValidationType(validation.type) === 'submit') {
       const { errors: validationErrors } = validation.schema(values);
       dispatch({ type: 'submit_validate', payload: validationErrors });
       if (Object.keys(validationErrors).length) return;
@@ -151,14 +149,14 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
     const { value, type, name } = e.target ?? {};
     const currentValue = type === 'number' && !!value ? Number(value) : value;
     dispatch({ type: 'change', payload: { [name]: currentValue } });
-    if (validation && validation.type === 'change') {
+    if (validation && getValidationType(validation.type) === 'change') {
       handleChangeValidateField(name, value);
     }
   });
 
   const onBlur: FocusEventHandler<HTMLInputElement> = useEventCallback((e) => {
     const name = e.target.name;
-    if (validation && validation.type === 'blur') {
+    if (validation && getValidationType(validation.type) === 'blur') {
       handleBlurValidateField(name, values[name]);
     }
     if (touched[name]) return;
@@ -198,7 +196,7 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
     value: values[fieldName],
     onChange,
     onBlur,
-    options,
+    ...options,
   });
 
   return {
