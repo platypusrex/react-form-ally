@@ -20,11 +20,6 @@ type SubmitValidateAction<TValues extends FormValues<any>> = {
   payload: { [K in keyof TValues]?: string };
 };
 
-type ClearErrorAction<TValues extends FormValues<any>> = {
-  type: 'clear_error';
-  payload: keyof TValues;
-};
-
 type ResetAction<TValues extends FormValues<any>> = {
   type: 'reset';
   payload: FormState<TValues>;
@@ -39,7 +34,6 @@ export type FormAction<TValues extends FormValues<any>> =
   | BlurAction<TValues>
   | ValidateAction<TValues>
   | SubmitValidateAction<TValues>
-  | ClearErrorAction<TValues>
   | ResetAction<TValues>
   | SubmitAction;
 

@@ -57,11 +57,11 @@ export const validators: Record<keyof FieldValidation, Function> = {
     if (!value || value === config.value) return;
     return {
       valid: false,
-      message: config?.message ?? `${name} is not equal to ${config.value}`,
+      message: config?.message ?? `${name} is not equal to ${config.value}.`,
     };
   },
   pattern: (name: string, value: any, config: PatternFieldValidation) => {
-    if (!value || !config.regex.test(value)) return;
+    if (!value || config.regex.test(value)) return;
     return {
       valid: false,
       message: config?.message ?? `${name} is not valid.`,
