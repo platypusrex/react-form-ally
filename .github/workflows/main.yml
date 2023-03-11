@@ -41,7 +41,7 @@ jobs:
         run: pnpm run lint:ci
 
       - name: Test
-        run: pnpm run test --coverage --maxWorkers=2
+        run: pnpm run test -- --maxWorkers=2
 
       - name: Build
         run: pnpm run build:packages
