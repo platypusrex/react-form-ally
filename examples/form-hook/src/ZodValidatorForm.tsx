@@ -5,7 +5,7 @@ import { zodValidator } from '@react-form-ally/zod-validator';
 import { TextField } from './components/TextField';
 import { Button } from './components/Button';
 
-const POBoxRegex = /\bP(ost|ostal)?([ \.]*(O|0)(ffice)?)?([ \.]*Box)\b/i;
+const POBoxRegex = /(P(ost|ostal)?([ \.]*(O|0)(ffice)?)?([ \.]*Box))/i;
 const allowedNames = ['Jack', 'Jay', 'Jim', 'Jarod', 'Jason'];
 
 const schema = z.object({
@@ -18,7 +18,7 @@ const schema = z.object({
     ),
   website: z.string().url().optional().or(z.literal('')),
   street: z
-    .custom((val) => !POBoxRegex.test(val as string), { message: 'No PO box allowed' })
+    .custom((val) => !POBoxRegex.test(val as string), 'No PO box allowed')
     .optional()
     .or(z.literal('')),
   email: z.string().min(1, 'email is required').email(),

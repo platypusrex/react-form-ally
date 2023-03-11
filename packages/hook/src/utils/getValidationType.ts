@@ -1,4 +1,4 @@
-import { Validation } from '../types';
+import type { Validation } from '../types';
 
 export const getValidationType = (
   validationType: Validation<any>['type']
