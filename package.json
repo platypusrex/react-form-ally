@@ -2,18 +2,47 @@
   "name": "react-form-ally",
   "private": true,
   "version": "0.0.0",
+  "author": "Frank Cooke",
+  "description": "React hook for managing and validating form state",
+  "keywords": [
+    "react",
+    "form",
+    "forms",
+    "hooks",
+    "debounce",
+    "typescript",
+    "zod",
+    "yup"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/platypusrex/react-form-ally.git"
+  },
+  "bugs": {
+    "url": "https://github.com/platypusrex/react-form-ally/issues"
+  },
+  "homepage": "https://github.com/platypusrex/react-form-ally/#readme",
   "workspaces": [
     "examples/*",
     "packages/*"
   ],
   "scripts": {
+    "clean": "turbo run clean --parallel",
+    "clean:deps": "turbo run clean:deps --parallel",
+    "clean:all": "turbo run clean:all --parallel",
     "build": "turbo run build",
     "build:packages": "turbo run build --filter=@react-form-ally/*",
     "dev": "turbo run dev",
+    "test": "turbo run test --filter=@react-form-ally/*",
     "lint": "eslint --cache '{packages,examples}/*/{src,test}/**.{ts,tsx,js,md}'",
     "lint:ci": "eslint --cache 'packages/*/{src,test}/**.{ts,tsx,js,md}'",
     "lint:fix": "eslint '{packages,examples}/*/{src,test}/**.{ts,tsx,js,md}' --fix",
-    "format": "prettier --write \"**/*.{ts,tsx,js,md}\""
+    "check:types": "yarn turbo run check:types --filter=@react-form-ally/*",
+    "format": "prettier --write \"**/*.{ts,tsx,js,md}\"",
+    "ci": "yarn lint:ci && turbo run check:types build --filter=@react-form-ally/*",
+    "ci:version": "changeset version",
+    "prerelease": "yarn ci",
+    "release": "yarn prerelease && changeset publish && git push --follow-tags"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.53.0",

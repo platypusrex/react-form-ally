@@ -1,10 +1,22 @@
 {
   "name": "@react-form-ally/hook",
   "version": "0.0.1",
-  "keywords": [],
-  "license": "ISC",
   "author": "Frank Cooke",
-  "description": "",
+  "description": "Core module and react hook for managing and validating form state",
+  "license": "MIT",
+  "keywords": [
+    "react-form-ally",
+    "react",
+    "hook",
+    "form",
+    "forms",
+    "validation",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/platypusrex/react-form-ally.git"
+  },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/dts/index.d.ts",

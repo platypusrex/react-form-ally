@@ -1,10 +1,22 @@
 {
   "name": "@react-form-ally/yup-validator",
   "version": "0.0.1",
-  "keywords": [],
-  "license": "ISC",
   "author": "Frank Cooke",
-  "description": "",
+  "description": "A companion yup validation module for react-form-ally",
+  "license": "MIT",
+  "keywords": [
+    "react-form-ally",
+    "react",
+    "form",
+    "forms",
+    "validation",
+    "typescript",
+    "yup"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/platypusrex/react-form-ally.git"
+  },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/dts/index.d.ts",
