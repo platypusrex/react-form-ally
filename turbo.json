@@ -6,8 +6,27 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "lint": {
+    "test": {
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
+    },
+    "check:types": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "clean": {
+      "outputs": [],
+      "cache": false
+    },
+    "clean:deps": {
+      "outputs": [],
+      "cache": false
+    },
+    "clean:all": {
+      "outputs": [],
+      "cache": false
     },
     "dev": {
       "cache": false
