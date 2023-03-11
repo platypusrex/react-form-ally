@@ -3,7 +3,7 @@ import { ObjectSchema, ValidationError } from 'yup';
 type FormValues = { [key: string]: any };
 
 const parseErrorSchema = <TValues extends FormValues>(yupError: ValidationError) => {
-  let errors = {} as Record<keyof TValues, string>;
+  const errors = {} as Record<keyof TValues, string>;
   const validationErrors = yupError.inner;
   for (let i = 0; i < validationErrors.length; i++) {
     const { path, message } = validationErrors[i];
