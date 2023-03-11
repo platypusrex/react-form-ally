@@ -32,16 +32,16 @@ jobs:
         with:
           path: node_modules/.cache
           key:
-            turbo-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/yarn.lock') }}
+            turbo-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: yarn lint:ci
+        run: pnpm run lint:ci
 
       - name: Test
-        run: yarn test --ci --coverage --maxWorkers=2
+        run: pnpm run test --coverage --maxWorkers=2
 
       - name: Build
-        run: yarn build:packages
+        run: pnpm run build:packages
