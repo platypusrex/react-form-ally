@@ -6,9 +6,12 @@
   "description": "React hook for managing and validating form state",
   "keywords": [
     "react",
+    "hooks",
+    "react-hooks",
     "form",
     "forms",
-    "hooks",
+    "validation",
+    "form-validation",
     "debounce",
     "typescript",
     "zod",
@@ -24,7 +27,8 @@
   "homepage": "https://github.com/platypusrex/react-form-ally/#readme",
   "workspaces": [
     "examples/*",
-    "packages/*"
+    "packages/*",
+    "docs/*"
   ],
   "scripts": {
     "clean": "turbo run clean --parallel",
