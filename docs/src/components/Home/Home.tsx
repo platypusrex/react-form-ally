@@ -40,7 +40,8 @@ export const Home: React.FC = () => {
           </g>
         </svg>
         <p className="text-center mt-6 text-lg">
-          An intuitive and subtly powerful way to build forms with ease and confidence in React applications.
+          An intuitive and subtly powerful way to build forms with ease and confidence in React
+          applications.
         </p>
         <div className="mt-12">
           <NextLink
