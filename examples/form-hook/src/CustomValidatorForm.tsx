@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
+import { useForm } from '@react-form-ally/hook';
 import { TextField } from './components/TextField';
 import { Button } from './components/Button';
-import { useForm } from './form-hook/useForm';
 
 const initialValues = {
   name: '',
@@ -17,7 +17,7 @@ interface CustomValidationFormProps {
 }
 
 export const CustomValidatorForm: React.FC<CustomValidationFormProps> = ({ type, debounce }) => {
-  const { registerField, errors, onSubmit, reset, isValid, setValue } = useForm<
+  const { registerField, errors, onSubmit, onReset, valid, setFieldValue } = useForm<
     typeof initialValues
   >({
     initialValues,
@@ -39,7 +39,7 @@ export const CustomValidatorForm: React.FC<CustomValidationFormProps> = ({ type,
   });
 
   useEffect(() => {
-    setValue('name', 'Frank');
+    setFieldValue('name', 'Frank');
   }, []);
 
   const handleSubmit = (formValues: typeof initialValues) => {
@@ -47,7 +47,7 @@ export const CustomValidatorForm: React.FC<CustomValidationFormProps> = ({ type,
   };
 
   return (
-    <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={reset}>
+    <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
       <h1>Custom</h1>
       <div className="form-container">
         <TextField
@@ -86,7 +86,7 @@ export const CustomValidatorForm: React.FC<CustomValidationFormProps> = ({ type,
           {...registerField('street')}
         />
       </div>
-      <Button disabled={!isValid && type !== 'submit'} style={{ marginBottom: 20 }}>
+      <Button disabled={!valid && type !== 'submit'} style={{ marginBottom: 20 }}>
         Submit
       </Button>
       <Button type="reset">Reset</Button>

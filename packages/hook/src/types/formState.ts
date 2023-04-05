@@ -29,13 +29,29 @@ type SubmitAction = {
   type: 'submit';
 };
 
+type ResetValues<TValues extends FormValues<any>> = {
+  type: 'reset_values';
+  payload: TValues;
+};
+
+type ResetErrors = {
+  type: 'reset_errors';
+};
+
+type ResetTouched = {
+  type: 'reset_touched';
+};
+
 export type FormAction<TValues extends FormValues<any>> =
   | ChangeAction<TValues>
   | BlurAction<TValues>
   | ValidateAction<TValues>
   | SubmitValidateAction<TValues>
   | ResetAction<TValues>
-  | SubmitAction;
+  | SubmitAction
+  | ResetValues<TValues>
+  | ResetErrors
+  | ResetTouched;
 
 export type FormState<TValues extends FormValues<any>> = {
   values: TValues;

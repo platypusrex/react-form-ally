@@ -4,11 +4,7 @@
     "type": "page",
     "display": "hidden",
     "theme": {
-      "sidebar": false,
-      "toc": false,
-      "footer": true,
-      "pagination": true,
-      "breadcrumb": false
+      "layout": "full"
     }
   },
   "docs": {

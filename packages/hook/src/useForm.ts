@@ -3,13 +3,17 @@ import type { ChangeEventHandler, FocusEventHandler, FormEvent } from 'react';
 import { useDebouncedValidation, useEventCallback } from './hooks';
 import { getValidationType } from './utils';
 import type {
+  DefaultCallback,
   FormAction,
   FormErrors,
   FormState,
   FormTouched,
   FormValues,
   RegisterField,
-  Reset,
+  SetError,
+  SetErrors,
+  SetFieldTouched,
+  SetTouched,
   SetValue,
   SetValues,
   Submit,
@@ -45,6 +49,12 @@ const reducer = <TValues extends FormValues<any>>(
       return { ...state, ...action.payload };
     case 'submit':
       return { ...state, submitted: true };
+    case 'reset_values':
+      return { ...state, values: action.payload };
+    case 'reset_errors':
+      return { ...state, errors: {} };
+    case 'reset_touched':
+      return { ...state, touched: {} };
     default:
       return state;
   }
@@ -63,9 +73,16 @@ export type UseFormConfig<TValues extends FormValues<any> = FormValues<any>> = {
 
 export type UseForm<TValues extends FormValues<any> = FormValues<any>> = {
   onSubmit: Submit<TValues>;
-  onReset: Reset;
-  setValue: SetValue<TValues, keyof TValues>;
-  setValues: SetValues<TValues>;
+  onReset: DefaultCallback;
+  resetValues: DefaultCallback;
+  resetErrors: DefaultCallback;
+  resetTouched: DefaultCallback;
+  setFieldValue: SetValue<TValues, keyof TValues>;
+  setFieldsValues: SetValues<TValues>;
+  setFieldError: SetError<TValues>;
+  setFieldsErrors: SetErrors<TValues>;
+  setFieldTouched: SetFieldTouched<TValues>;
+  setFieldsTouched: SetTouched<TValues>;
   registerField: RegisterField<TValues>;
   values: FormValues<TValues>;
   errors: FormErrors<TValues>;
@@ -111,7 +128,7 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
     }
 
     if (!error) {
-      errors[fieldName] && validationOutFn?.(fieldName, undefined);
+      errors[fieldName as keyof typeof errors] && validationOutFn?.(fieldName, undefined);
       if (validationInFn && 'cancel' in validationInFn) {
         validationInFn?.cancel();
       }
@@ -125,12 +142,12 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
   }, [validation, values]);
 
   /* --------------Form handlers-------------- */
-  const onReset = useCallback(() => {
+  const onReset = useEventCallback(() => {
     dispatch({
       type: 'reset',
       payload: { ...initialState, values: initialValues },
     });
-  }, [initialValues]);
+  });
 
   const onSubmit = useEventCallback((handler: (formValues: TValues) => void) => (e: FormEvent) => {
     e.preventDefault();
@@ -159,45 +176,83 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
     if (validation && getValidationType(validation.type) === 'blur') {
       handleBlurValidateField(name, values[name]);
     }
-    if (touched[name]) return;
+    if (touched[name as keyof typeof touched]) return;
     dispatch({ type: 'blur', payload: { [name]: true } });
   });
 
   /* --------------Form and field utils-------------- */
-  const setValue: SetValue<TValues, keyof TValues> = (name, value, shouldValidate = true) => {
-    const formValue = { [name]: value } as TValues;
-    dispatch({ type: 'change', payload: formValue });
-    if (validation && shouldValidate) {
-      const { errors: validationErrors } = validation.schema(formValue);
-      validationErrors?.[name] &&
-        dispatch({ type: 'validate', payload: { [name]: validationErrors[name] } });
-    }
-  };
-  const setValues: SetValues<TValues> = (values, shouldValidation = true) => {
-    dispatch({ type: 'change', payload: values });
+  const resetValues = useCallback(() => {
+    dispatch({ type: 'reset_values', payload: initialValues });
+  }, [initialValues]);
 
-    if (shouldValidation && validation) {
-      const { errors: validationErrors } = validation.schema(values as TValues);
-      const errorKeys = Object.keys(validationErrors);
-      if (errorKeys.length) {
-        const fieldNames = Object.keys(values);
-        const newErrors = fieldNames.reduce((acc, curr) => {
-          if (errorKeys.find((key) => fieldNames.includes(key))) {
-            acc[curr as keyof TValues] = validationErrors[curr] as string;
-          }
-          return acc;
-        }, {} as Record<keyof TValues, string>);
-        dispatch({ type: 'validate', payload: newErrors });
+  const resetErrors = useCallback(() => {
+    dispatch({ type: 'reset_errors' });
+  }, []);
+
+  const resetTouched = useCallback(() => {
+    dispatch({ type: 'reset_touched' });
+  }, []);
+
+  const setFieldValue: SetValue<TValues, keyof TValues> = useCallback(
+    (name, value, shouldValidate = true) => {
+      const formValue = { [name]: value } as TValues;
+      dispatch({ type: 'change', payload: formValue });
+      if (validation && shouldValidate) {
+        const { errors: validationErrors } = validation.schema(formValue);
+        validationErrors?.[name] &&
+          dispatch({ type: 'validate', payload: { [name]: validationErrors[name] } });
       }
-    }
-  };
-  const registerField: RegisterField<TValues> = (fieldName, options) => ({
-    name: fieldName as string,
-    value: values[fieldName],
-    onChange,
-    onBlur,
-    ...options,
-  });
+    },
+    [validation]
+  );
+  const setFieldsValues: SetValues<TValues> = useCallback(
+    (values, shouldValidation = true) => {
+      dispatch({ type: 'change', payload: values });
+
+      if (shouldValidation && validation) {
+        const { errors: validationErrors } = validation.schema(values as TValues);
+        const errorKeys = Object.keys(validationErrors);
+        if (errorKeys.length) {
+          const fieldNames = Object.keys(values);
+          const newErrors = fieldNames.reduce((acc, curr) => {
+            if (errorKeys.find((key) => fieldNames.includes(key))) {
+              acc[curr as keyof TValues] = validationErrors[curr] as string;
+            }
+            return acc;
+          }, {} as Record<keyof TValues, string>);
+          dispatch({ type: 'validate', payload: newErrors });
+        }
+      }
+    },
+    [validation]
+  );
+
+  const setFieldError: SetError<TValues> = useCallback((name, value) => {
+    dispatch({ type: 'validate', payload: { [name]: value } });
+  }, []);
+
+  const setFieldsErrors: SetErrors<TValues> = useCallback((errors) => {
+    dispatch({ type: 'validate', payload: errors });
+  }, []);
+
+  const setFieldTouched: SetFieldTouched<TValues> = useCallback((name, value) => {
+    dispatch({ type: 'blur', payload: { [name]: value } });
+  }, []);
+
+  const setFieldsTouched: SetTouched<TValues> = useCallback((touched) => {
+    dispatch({ type: 'blur', payload: touched });
+  }, []);
+
+  const registerField: RegisterField<TValues> = useCallback(
+    (fieldName, options) => ({
+      name: fieldName as string,
+      value: values[fieldName],
+      onChange,
+      onBlur,
+      ...options,
+    }),
+    [onBlur, onChange, values]
+  );
 
   return {
     onSubmit,
@@ -207,8 +262,15 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
     touched,
     submitted,
     valid,
-    setValue,
-    setValues,
+    resetErrors,
+    resetTouched,
+    resetValues,
+    setFieldValue,
+    setFieldsValues,
+    setFieldError,
+    setFieldsErrors,
+    setFieldTouched,
+    setFieldsTouched,
     registerField,
   };
 };

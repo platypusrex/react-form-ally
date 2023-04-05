@@ -1,0 +1,98 @@
+# Built-in Validator
+
+The `react-form-ally` module ships with it's own validator function, and with it comes with some common
+validation methods that you'll commonly need when building forms. While it's not nearly as sophisticated as full-featured
+validation libraries, it's very simple to use and expressive enough for many use cases.
+
+
+Each of the methods mentioned above return an object with two properties: valid, a boolean indicating whether the
+validation succeeded or failed, and message, a string containing an error message to display if the validation failed.
+
+The validator functions provides the 8 options below:
+
+`isRequired`<br/>
+checks whether the value is truthy; if it is not, returns an object indicating that the validation failed.
+
+`isEmail`<br/>
+checks whether the value is a valid email address according to a regular expression; if it is not,
+returns an object indicating that the validation failed.
+
+`isUrl`<br/>
+checks whether the value is a valid URL according to a regular expression; if it is not, returns an object
+indicating that the validation failed.
+
+`isOneOf`<br/>
+checks whether the value is one of the values specified in the values property of the config argument;
+if it is not, returns an object indicating that the validation failed.
+
+`max`<br/>
+checks whether the length of the value is less than or equal to the length property of the config argument;
+if it is not, returns an object indicating that the validation failed.
+
+`min`<br/>
+checks whether the length of the value is greater than or equal to the length property of the config argument;
+if it is not, returns an object indicating that the validation failed.
+
+`equals`<br/>
+checks whether the current value is equal to the value provided to the validator; if it is not, returns an
+object indicating that the validation failed.
+
+`pattern`<br/>
+checks the current value against the provided regex; if it is not, returns an
+object indicating that the validation failed.
+
+### Usage
+```tsx copy
+import React from 'react';
+import {
+  useForm,
+  validator,
+  ValidatorSchema,
+} from '@react-form-ally/hook';
+
+type FormValues = {
+  email: string;
+  password: string;
+};
+
+const initialValues = {
+  email: '',
+  password: '',
+};
+
+const schema: ValidatorSchema<FormValues> = {
+  email: { isRequired: true, isEmail: true },
+  password: { isRequired: true, min: { length: 8 } },
+};
+
+export const LoginForm: React.FC= () => {
+  const { registerField, errors, onSubmit, onReset, valid, setFieldsValues } = useForm<FormValues>({
+    initialValues,
+    validation: {
+      debounce: { in: 500, out: 0},
+      schema: validator(schema),
+    },
+  });
+
+  const handleSubmit = (formValues: FormValues) => {
+    alert(JSON.stringify(formValues, null, 2));
+  };
+
+  return (
+    <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
+      <input
+        error={errors.email}
+        {...registerField('email', { id: 'email', type: 'email' })}
+      />
+      <input
+        error={errors.password}
+        {...registerField('password', { id: 'password', type: 'password' })}
+      />
+      <button type="submit">Submit</button>
+      <button type="reset">Reset</button>
+    </form>
+  );
+};
+```
+
+

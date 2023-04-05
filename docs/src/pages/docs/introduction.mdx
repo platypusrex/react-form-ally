@@ -1,0 +1,29 @@
+## Introduction
+
+Welcome and thanks for checking out `react-form-ally`, a React hook that simplifies form handling in React applications.
+`react-form-ally` provides developers with a simple and easy-to-use API to manage form state, validation, and
+submission logic. It is highly customizable, and you can configure it to work with any form validation library or
+schema. It is also framework-agnostic, and you can use it with any frontend framework or library that supports React.
+
+Aside from providing a clear and concise way to manage form state, `react-form-ally` also provides a flexible way
+to handle form validation. Developers can specify a validation schema via the `useForm` config, and the hook will
+automatically validate the form values based on the specified schema. Validation can be performed on change, blur,
+or submit events, and the hook supports debouncing validation to reduce performance overhead. The module itself
+provides some built it validation, but also supports a plugin style validation. This allows you to roll your own
+validation for your particular use case, or you can install one of the companion modules for using third-party validation
+libraries. Currently this includes both `zod` and `yup`.
+
+Additionally, this hook provides utilities for handling form submission and form resetting, as well as managing individual
+form fields. Developers can easily set or update form field values, register form fields, and track which form fields
+have been touched. This makes it easy to build complex forms with your validation requirements while keeping the code
+readable and maintainable.
+
+Overall, this hook helps reduce the amount of boilerplate code generally required for form management in a React
+applications, all while improving code quality and maintainability. And of course its also written in TypeScript,
+which means not only will you have gained the confidence of the additional type checking, you will also reap the
+kind of DX that one should expect from any TS library.
+
+**Note:**<br/>
+It's always a good idea to evaluate multiple options before choosing a library or tool for your project.
+Some factors to consider might include the size and complexity of your project, the specific requirements for your
+form validation, and the level of customization and control you need over your form validation logic.

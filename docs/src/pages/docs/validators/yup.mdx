@@ -1,0 +1,76 @@
+# Yup Validator
+
+As mentioned earlier in the docs, the `react-form-ally` validation API is super flexible making it relatively simple to integrate
+support for third party validation libraries. `Yup` is one of those already supported modules and can be installed as
+a third-party dependency. You will also need to install the `yup` module as it is peer dependency.
+
+### Installation
+**npm**
+```bash copy
+npm install --save @react-form-ally/yup-validator yup
+```
+**yarn**
+```bash copy
+yarn add @react-form-ally/yup-validator yup
+```
+**pnpm**
+```bash copy
+pnpm add @react-form-ally/yup-validator yup
+```
+
+When using the `yup` validator, you can also take advantage of using the libraries type inference which allows you to
+use the defined schema object to provide type support for your form.
+
+### Usage
+```tsx copy
+import React from 'react';
+import { object, string, InferType } from 'yup';
+import { useForm } from '@react-form-ally/hook';
+import { yupValidator } from '@react-form-ally/yup-validator';
+
+type FormValues = {
+  email: string;
+  password: string;
+};
+
+const schema = object({
+  email: string().email().required(),
+  password: string().required().min(8),
+});
+
+type FormValues = InferType<typeof schema>;
+
+const initialValues: FormValues = {
+  email: '',
+  password: '',
+};
+
+export const LoginForm: React.FC= () => {
+  const { registerField, errors, onSubmit, onReset, valid, setFieldsValues } = useForm<FormValues>({
+    initialValues,
+    validation: {
+      debounce: { in: 500, out: 0},
+      schema: yupValidator(schema),
+    },
+  });
+
+  const handleSubmit = (formValues: FormValues) => {
+    alert(JSON.stringify(formValues, null, 2));
+  };
+
+  return (
+    <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
+      <input
+        error={errors.email}
+        {...registerField('email', { id: 'email', type: 'email' })}
+      />
+      <input
+        error={errors.password}
+        {...registerField('password', { id: 'password', type: 'password' })}
+      />
+      <button type="submit">Submit</button>
+      <button type="reset">Reset</button>
+    </form>
+  );
+};
+```

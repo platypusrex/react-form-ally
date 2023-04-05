@@ -19,6 +19,9 @@
     "examples/**/*.ts",
     "examples/**/*.js",
     "examples/**/*.tsx",
+    "docs/**/*.ts",
+    "docs/**/*.js",
+    "docs/**/*.tsx",
     "*.js",
     ".*.js"
   ]

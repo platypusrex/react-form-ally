@@ -1,30 +1,700 @@
-# Another Page
+# Hook API
 
-```js filename="demo.js" {3} copy
-let a = 1;
-console.log(a);
-```
+## useForm
+The `useForm` hook takes an object `UseFormConfig<FormValues>` with two properties: `initialValues` and `validation`.
+The `initialValues` property is an object containing the initial values of the form fields. The `validation` property
+is an optional object containing validation rules for the form fields.
 
-## Component
+**Parameters:**
 
-import { useState } from 'react'
+`initialValues`<br/>
+An object containing the initial values of the form fields
 
-{/* Import CSS modules */}
-import styles from '../../components/counters.module.css'
+`validation`<br/>
+An optional object containing validation rules for the form fields. It has several fields and some of which are
+optional.
 
-export const Counter = () => {
-  const [count, setCount] = useState(0);
-  return (
-    <div>
-      <button onClick={() => setCount(count + 1)} className={styles.counter}>Clicked {count} times</button>
-    </div>
-  );
+* `type`<br/>
+The type field of the validation object describes how and when the form fields should be validated. The 3 options
+are: '`change`, `blur`, and `submit`. It defaults to `change`.
+
+* `schema`<br/>
+The `schema` is required if the validation parameter is provided. These are the rules provided to the hook that
+describe how the form fields should be validated. Technically it is just a callback function that receives the current
+form values as an argument, and returns an object with an `errors` key.
+
+* `debounce`<br/>
+This is another optional field for the validation object and can only be provided when the validation type
+is `change`. It allows you to express the amount of time to debounce when a fields value is being changed both in and
+out of the form field's validation.
+
+**Types:**
+```ts
+export type Debounce =
+  | number
+  | {
+      in: number;
+      out: number;
+    };
+
+export type BaseValidation<TValues extends FormValues<any>> = {
+  schema: (values: TValues) => ValidatorResult<TValues>;
 };
 
-<Counter/>
+export type ChangeValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
+  type?: 'change';
+  debounce?: Debounce;
+};
 
-## External Component
+export type BlurValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
+  type?: 'blur';
+};
 
-import Counters from '../../components/counters'
+export type SubmitValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
+  type?: 'submit';
+};
 
-<Counters />
+export type Validation<TValues extends FormValues<any>> =
+  | ChangeValidation<TValues>
+  | BlurValidation<TValues>
+  | SubmitValidation<TValues>;
+```
+
+**Usage:**
+```ts /initialValues/ /validation/
+import { useForm } from '@react-form-ally/hook';
+
+type FormValues = {
+  email: string;
+  password: string;
+};
+
+const form = useForm<FormValues>({
+  initialValues: {
+    email: '',
+    password: '',
+  },
+  validation: {
+    debounce: {
+      in: 500,
+      out: 0,
+    },
+    schema: (values) => {
+      return {
+        errors: {
+          email: 'Email is required',
+        }
+      };
+    }
+  }
+});
+```
+
+## registerField
+the `registerField` function is a utility function for registering form fields and their properties in a
+type-safe manner. It takes in two arguments - `fieldName` and `options` - and returns a
+`RegisterFieldResult`.
+
+* `fieldName`<br/>
+Represents the name attribute of the form field. It is a union type of all the keys in the generic object passed
+to `useForm`.
+
+* `options` (optional)<br/>
+An optional object that can have any of the following properties: `id`, `required`, `disabled`, `max`, `maxLength`,
+`min`, `minLength`, `pattern`, `placeholder`, and `readOnly`. Each of these properties represent supported HTML
+form field attributes and are simply spread onto the registered field.
+
+The `RegisterFieldResult` by default will add the following four properties to a form field: `name`, `onChange`,
+`onBlur`, and `value`.
+
+* `name`<br/>
+Represents the name of the field.
+
+* `onChange`<br/>
+A `ChangeEventHandler<any>` function that is called when the field value changes.
+
+* `onBlur`<br/>
+A `FocusEventHandler<any>` function that is called when the field loses focus.
+
+* `value`<br/>
+A string or a number that represents the current value of the field.
+
+**Types:**
+```ts
+export type RegisterFieldOptions = {
+  id?: string;
+  required?: boolean;
+  disabled?: boolean;
+  max?: number | string;
+  maxLength?: number;
+  min?: number | string;
+  minLength?: number;
+  pattern?: RegExp;
+  placeholder?: string;
+  readOnly?: boolean;
+};
+
+export type RegisterFieldResult = RegisterFieldOptions & {
+  name: string;
+  onChange: ChangeEventHandler<any>;
+  onBlur: FocusEventHandler<any>;
+  value: string | number;
+};
+
+export type RegisterField<TValues extends FormValues<any>> = (
+  fieldName: keyof TValues,
+  options?: RegisterFieldOptions
+) => RegisterFieldResult;
+```
+
+```tsx /registerField/
+const { registerField } = useForm({
+ // ...
+});
+
+return (
+  <form>
+    <input type="email" {...registerField('email', { id: 'email', required: true })} />
+    {/* ... */}
+  </form>
+);
+```
+
+## onSubmit
+The `onSubmit` option is a function takes a callback function as a parameter. The callback function will be called
+when the form is submitted, and will receive the current values of the form fields as a parameter.
+
+**Types:**
+```ts
+export type Submit<TValues extends FormValues<any>> = (
+  handler: (formValues: TValues) => void
+) => (e: FormEvent) => void;
+```
+
+**Usage:**
+```tsx /onSubmit/
+const { onSubmit } = useForm({
+ // ...
+});
+
+const handleSubmit = (formValues: FormValues) => {
+  // ...
+}
+
+return (
+  <form onSubmit={onSubmit(handleSubmit)}>
+    {/* ... */}
+  </form>
+);
+```
+
+## onReset
+The `onReset` handler is a function that resets the form to its initial values. This could simply be tied to your form
+via the form element's `onReset` method, or called programmatically whenever you need to reset form state entirely. This
+will include any value, validation, or touched state.
+
+**Types:**
+```ts
+type Reset = () => void;
+```
+
+**Usage:**
+```tsx /onReset/
+const { onReset } = useForm({
+ // ...
+});
+
+return (
+  <form onReset={onReset}>
+    {/* ... */}
+  </form>
+);
+```
+
+## resetValues
+A helper function that resets the form value state to it's initial values without making any changes or updates to the
+error and touched states. It takes no arguments and returns nothing (i.e., it has a return type of `void`). It can be
+used as a drop in replacement for the `onReset` method or whatever use case you might have for dynamically resetting
+form values.
+
+**Types:**
+```ts
+type ResetValues = () => void;
+```
+
+**Usage:**
+```tsx /resetValues/
+const { onSubmit, resetValues } = useForm({
+ // ...
+});
+
+const handleSubmit = (formValues: FormValues) => {
+  // ...
+  resetValues();
+}
+
+return (
+  <form onSubmit={onSubmit(handleSubmit)}>
+    {/* ... */}
+  </form>
+);
+```
+
+## resetErrors
+A helper function that resets the form error state to it's initial values without making any changes or updates to the
+values and touched states. It takes no arguments and returns nothing (i.e., it has a return type of void). It can
+be used as a drop in replacement for the `onReset` method or whatever use case you might have for dynamically
+resetting form errors.
+
+**Types:**
+```ts
+type ResetErrors = () => void;
+```
+
+**Usage:**
+```tsx /resetErrors/
+const { onSubmit, resetErrors } = useForm({
+ // ...
+});
+
+const handleSubmit = (formValues: FormValues) => {
+  // ...
+  resetErrors();
+}
+
+return (
+  <form onSubmit={onSubmit(handleSubmit)}>
+    {/* ... */}
+  </form>
+);
+```
+
+## resetTouched
+A helper function that resets the form touched state to it's initial values without making any changes or updates to the
+values and error states. It takes no arguments and returns nothing (i.e., it has a return type of void). It can
+be used as a drop in replacement for the `onReset` method or whatever use case you might have for dynamically
+resetting form errors.
+
+**Types:**
+```ts
+type ResetTouched = () => void;
+```
+
+**Usage:**
+```tsx /resetTouched/
+const { onSubmit, resetTouched } = useForm({
+ // ...
+});
+
+const handleSubmit = (formValues: FormValues) => {
+  // ...
+  resetTouched();
+}
+
+return (
+  <form onSubmit={onSubmit(handleSubmit)}>
+    {/* ... */}
+  </form>
+);
+```
+
+## setFieldValue
+A function that sets a value for a specific field in a form. It takes three parameters:
+
+* `name`<br/>
+The name of the field to set the value for.
+
+* `value`<br/>
+The value to set for the field.
+
+* `shouldValidate`<br/>
+An optional boolean parameter that specifies whether the field should be validated after setting its value.
+Defaults to `true`.
+
+The `setFieldValue` function can be used in a generic way to define a function that sets the value for any
+field in a form.
+
+**Types:**
+```ts
+export type SetValue<TValues extends FormValues<any>, K extends keyof TValues> = (
+  name: K,
+  value: TValues[K],
+  shouldValidate?: boolean
+) => void;
+```
+
+**Usage:**
+```tsx /setFieldValue/
+const { setFieldValue } = useForm({
+ // ...
+});
+
+useEffect(() => {
+  let ignore = false;
+  fetch('http://myapi.com/user/1')
+    .then(res => res.json())
+    .then((json) => {
+      if (!ignore) {
+        const email = json.data?.user?.email;
+        setFieldValue('email', email);
+      }
+    });
+  return () => {
+    ignore = true;
+  };
+}, [url]);
+// ...
+```
+
+## setFieldsValues
+A function that sets the value of multiple form fields. It takes two arguments:
+
+* `values`<br/>
+A partial object of TValues, which is a generic type parameter of `FormValues<any>`.
+
+* `shouldValidation` (optional)<br/>
+A boolean flag indicating whether to trigger validation after setting the values.
+
+The `setFieldsValues` function returns nothing (i.e., it has a return type of void). It's much like `setFieldValue`,
+except it can be used to set the values of multiple form fields simultaneously.
+
+**Types:**
+```ts
+export type SetValues<TValues extends FormValues<any>> = (
+  values: Partial<TValues>,
+  shouldValidation?: boolean
+) => void;
+```
+
+**Usage:**
+```tsx /setFieldsValues/
+const { setFieldsValues } = useForm({
+ // ...
+});
+
+useEffect(() => {
+  let ignore = false;
+  fetch('http://myapi.com/user/1')
+    .then(res => res.json())
+    .then((json) => {
+      if (!ignore) {
+        const name = json.data?.user?.name;
+        const email = json.data?.user?.email;
+        setFieldsValues({ name, email });
+      }
+    });
+  return () => {
+    ignore = true;
+  };
+}, [url]);
+// ...
+```
+
+## setFieldError
+A function that sets an error message for a single form field. It takes 2 parameters:
+
+* `name`<br/>
+The name of the field to set the value for.
+
+* `value`<br/>
+The value to set for the field.
+
+The `setFieldError` function can be used in a generic way to define a function that sets the value for any
+field in a form.
+
+**Types:**
+```ts
+export type SetError<TValues extends FormValues<any>> = (
+  name: keyof TValues,
+  value: string
+) => void;
+```
+
+**Usage:**
+```tsx /setFieldError/
+const { setFieldError } = useForm({
+ // ...
+});
+
+useEffect(() => {
+  let ignore = false;
+  fetch('http://myapi.com/user/1')
+    .then(res => res.json())
+    .then(() => {
+      // ...
+    })
+    .catch(() => {
+      if (ignore) return;
+      setFieldError('email', 'Invalid email.');
+    });
+  return () => {
+    ignore = true;
+  };
+}, [url]);
+// ...
+```
+
+## setFieldsErrors
+A function that sets error messages for multiple form fields. It takes a single argument:
+
+* `values`<br/>
+A partial object of TValues, which is a generic type parameter of `FormValues<any>`.
+
+The `setFieldsErrors` function returns nothing (i.e., it has a return type of void). It's much like `setFieldError`,
+except it can be used to set the errors of multiple form fields simultaneously.
+
+**Types:**
+```ts
+export type SetErrors<TValues extends FormValues<any>> = (
+  values: Partial<Record<keyof TValues, string>>
+) => void;
+```
+
+**Usage:**
+```tsx /setFieldsErrors/
+const { setFieldsErrors } = useForm({
+ // ...
+});
+
+useEffect(() => {
+  let ignore = false;
+  fetch('http://myapi.com/user/1')
+    .then(res => res.json())
+    .then(() => {
+      // ...
+    })
+    .catch(() => {
+      if (ignore) return;
+      setFieldsErrors({ email: 'Invalid email' });
+    });
+  return () => {
+    ignore = true;
+  };
+}, [url]);
+// ...
+```
+
+## setFieldTouched
+A function that sets the touched state for a single form field. It takes 2 parameters:
+
+* `name`<br/>
+The name of the field to set the touched state for.
+
+* `value`<br/>
+The value to set for the field.
+
+The `setFieldTouched` function can be used in a generic way to define a function that sets the value for any
+field in a form.
+
+**Types:**
+```ts
+export type SetFieldTouched<TValues extends FormValues<any>> = (
+  name: keyof TValues,
+  value: boolean
+) => void;
+```
+
+**Usage:**
+```tsx /setFieldTouched/
+const { setFieldTouched } = useForm({
+ // ...
+});
+
+useEffect(() => {
+  let ignore = false;
+  fetch('http://myapi.com/user/1')
+    .then(res => res.json())
+    .then(() => {
+      // ...
+      if (ignore) return;
+      setFieldTouched('email', true);
+    })
+  return () => {
+    ignore = true;
+  };
+}, [url]);
+// ...
+```
+
+## setFieldsTouched
+A function that sets the touched state for multiple form fields. It takes a single parameter.
+
+* `values`<br/>
+A partial object of where the keys match those of type `FormValues<any>`, and the values are a boolean;
+
+The `setFieldsTouched` function returns nothing (i.e., it has a return type of void). It's much like `setFieldTouched`,
+except it can be used to set the touched state of multiple form fields simultaneously.
+
+**Types:**
+```ts
+export type SetTouched<TValues extends FormValues<any>> = (values: {
+  [K in keyof TValues]: boolean;
+}) => void;
+```
+
+**Usage:**
+```tsx /setFieldsTouched/
+const { setFieldsTouched } = useForm({
+ // ...
+});
+
+useEffect(() => {
+  let ignore = false;
+  fetch('http://myapi.com/user/1')
+    .then(res => res.json())
+    .then(() => {
+      // ...
+      if (ignore) return;
+      setFieldTouched({ email: true });
+    })
+  return () => {
+    ignore = true;
+  };
+}, [url]);
+// ...
+```
+
+## values
+An object containing the current values state of the form. The generic you provide will represent the values object
+for the instance of `useForm`.
+
+**Types:**
+```ts
+export type FormValues<TValues extends { [key: string]: any }> = {
+  [K in keyof TValues]: TValues[K];
+};
+```
+
+**Usage:**
+```tsx /values/
+type FormValues = {
+  email: string;
+}
+
+const { values, registerField } = useForm<FormValues>({
+ initialValues: {
+   email: '',
+ },
+});
+
+return (
+  <form>
+    <input type="email" {...registerField('email')} />
+    {values.email && <div>Current value: {values.email}</div>}
+    // ..
+  </form>
+);
+```
+
+## errors
+An object containing the current error state of the form. The generic you provide will represent the keys of the
+error object for the instance of `useForm`. The value will be of type string and will represent the error message
+for that form field.
+
+**Types:**
+```ts
+export type FormErrors<TValues extends FormValues<any>> = {
+  [K in keyof TValues]?: string;
+};
+```
+
+**Usage:**
+```tsx /errors/
+type FormValues = {
+  email: string;
+}
+
+const { errors, registerField } = useForm<FormValues>({
+ initialValues: {
+   email: '',
+ },
+});
+
+return (
+  <form>
+    <input type="email" {...registerField('email')} />
+    {errors.email && <div>{errors.email}</div>}
+    // ..
+  </form>
+);
+```
+
+## touched
+An object containing the current touched state of the form. The generic you provide will represent the keys of the
+touched state object for the instance of `useForm`. The value will be of type `boolean` and will represent whether the
+form field has been touched.
+
+**Types:**
+```ts
+export type FormTouched<TValues extends FormValues<any>> = {
+  [K in keyof TValues]?: boolean;
+};
+```
+
+**Usage:**
+```tsx /touched/
+type FormValues = {
+  email: string;
+}
+
+const { touched, errors, registerField } = useForm<FormValues>({
+  initialValues: {
+   email: '',
+  },
+});
+
+return (
+  <form>
+    <input type="email" {...registerField('email')} />
+    {touched.email && errors.email && <div>{errors.email}</div>}
+    // ..
+  </form>
+);
+```
+
+## valid
+A boolean indicating whether the form is currently valid.
+
+**Types:**
+```ts
+type Valid = boolean;
+```
+
+```tsx /valid/
+const { valid } = useForm({
+ // ...
+});
+
+return (
+  <form>
+    // ...
+    <button type="submit" disabled={!valid}>Submit</button>
+  </form>
+);
+```
+
+## submitted
+A boolean indicating whether the form has been submitted.
+
+**Types:**
+```ts
+type Submitted = boolean;
+```
+
+```tsx /submitted/
+const { submitted } = useForm({
+ // ...
+});
+
+if (submitted) {
+  return (
+    <div>Your form has been successfully submitted!</div>
+  );
+}
+
+return (
+  <form>
+    // ...
+  </form>
+);
+```

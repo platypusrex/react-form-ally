@@ -345,7 +345,7 @@ describe('useForm', () => {
       expect(result.current.values).toEqual(initialValues);
 
       act(() => {
-        result.current.setValue('foo', 'bar');
+        result.current.setFieldValue('foo', 'bar');
       });
 
       rerender();
@@ -364,7 +364,7 @@ describe('useForm', () => {
       expect(result.current.values).toEqual(initialValues);
 
       act(() => {
-        result.current.setValue('foo', 'bar');
+        result.current.setFieldValue('foo', 'bar');
       });
 
       rerender();
@@ -378,7 +378,7 @@ describe('useForm', () => {
       expect(result.current.values).toEqual(initialValues);
 
       act(() => {
-        result.current.setValues({ foo: 'bar', bar: 'foo' });
+        result.current.setFieldsValues({ foo: 'bar', bar: 'foo' });
       });
 
       rerender();
@@ -397,7 +397,7 @@ describe('useForm', () => {
       expect(result.current.values).toEqual(initialValues);
 
       act(() => {
-        result.current.setValues({ foo: 'bar', bar: 'foo' });
+        result.current.setFieldsValues({ foo: 'bar', bar: 'foo' });
       });
 
       rerender();

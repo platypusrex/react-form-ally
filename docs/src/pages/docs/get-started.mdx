@@ -1,4 +1,92 @@
 # Get started
 
-Welcome to Nextra! This is a basic docs template. You can use it as a starting point for your own project :)
+To use this hook, import the useForm function from this module and call it with an object containing the
+initialValues and validation schema:
+
+## Installation
+**npm**
+```bash copy
+npm install --save @react-form-ally/hook
+```
+**yarn**
+```bash copy
+yarn add @react-form-ally/hook
+```
+**pnpm**
+```bash copy
+pnpm add @react-form-ally/hook
+```
+
+## Usage
+With a familiar and intuitive API, it's super easy to get started with `react-form-ally`. This example will show you
+how to get going without the aid of internal or external validators. For more complex examples, see the various examples
+showcasing custom validators [here](https://github.com/platypusrex/react-form-ally/tree/master/examples/form-hook).
+
+```tsx filename="Login.tsx"
+import { useForm } from '@react-form-ally/hook';
+
+type FormValues = {
+  email: string;
+  password: string;
+}
+
+const initialValues: FormValues = {
+  email: '',
+  password: '',
+};
+
+export const Login: React.FC = () => {
+  const {
+    registerField,
+    errors,
+    touched,
+    valid,
+    onSubmit,
+    onReset,
+  } = useForm<FormValues>({
+    initialValues,
+    validation: {
+      type: 'submit',
+      schema: (values) => {
+        const errors = {};
+
+        if (!values.email) {
+          errors.email = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+          errors.email = 'Invalid email address';
+        }
+
+        if (!values.password) {
+          errors.password = 'Password is required';
+        } else if (values.password.length < 8) {
+          errors.password = 'Password must be at least 8 characters long';
+        }
+
+        return { errors };
+      },
+    },
+  });
+
+  const handleSubmit = (formValues: FormValues) => {
+    console.log('Submitting form', formValues);
+  };
+
+  return (
+    <form onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
+      <input type="email" {...registerField('email')} />
+      {touched.email && errors.email && <div>{errors.email}</div>}
+
+      <input type="password" {...registerField('password')} />
+      {touched.password && errors.password && <div>{errors.password}</div>}
+
+      <button type="submit" disabled={!valid}>
+        Submit
+      </button>
+      <button type="reset">
+        Reset
+      </button>
+    </form>
+  );
+};
+```
 
