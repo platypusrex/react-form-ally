@@ -1,0 +1,76 @@
+# Zod Validator
+
+As mentioned earlier in the docs, the `react-form-ally` validation API is super flexible making it relatively simple to integrate
+support for third party validation libraries. `Zod` is one of those already supported modules and can be installed as
+a third-party dependency. You will also need to install the `zod` module as it is peer dependency.
+
+### Installation
+**npm**
+```bash copy
+npm install --save @react-form-ally/zod-validator zod
+```
+**yarn**
+```bash copy
+yarn add @react-form-ally/zod-validator zod
+```
+**pnpm**
+```bash copy
+pnpm add @react-form-ally/zod-validator zod
+```
+
+When using the `zod` validator, you can also take advantage of using the libraries type inference which allows you to
+use the defined schema object to provide type support for your form.
+
+### Usage
+```tsx copy
+import React from 'react';
+import { z } from 'zod';
+import { useForm } from '@react-form-ally/hook';
+import { zodValidator } from '@react-form-ally/zod-validator';
+
+type FormValues = {
+  email: string;
+  password: string;
+};
+
+const schema = z.object({
+  email: z.string().min(1, 'email is required').email(),
+  password: z.string().min(1, 'password is required')
+});
+
+type FormValues = z.infer<typeof schema>;
+
+const initialValues: FormValues = {
+  email: '',
+  password: '',
+};
+
+export const LoginForm: React.FC= () => {
+  const { registerField, errors, onSubmit, onReset, valid, setFieldsValues } = useForm<FormValues>({
+    initialValues,
+    validation: {
+      debounce: { in: 500, out: 0},
+      schema: zodValidator(schema),
+    },
+  });
+
+  const handleSubmit = (formValues: FormValues) => {
+    alert(JSON.stringify(formValues, null, 2));
+  };
+
+  return (
+    <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
+      <input
+        error={errors.email}
+        {...registerField('email', { id: 'email', type: 'email' })}
+      />
+      <input
+        error={errors.password}
+        {...registerField('password', { id: 'password', type: 'password' })}
+      />
+      <button type="submit">Submit</button>
+      <button type="reset">Reset</button>
+    </form>
+  );
+};
+```

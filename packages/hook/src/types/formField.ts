@@ -1,5 +1,8 @@
 import type { ChangeEventHandler, FocusEventHandler } from 'react';
-import type { FormValues } from './common';
+
+export type FormValues<TValues extends { [key: string]: any }> = {
+  [K in keyof TValues]: TValues[K];
+};
 
 export type RegisterFieldOptions = {
   id?: string;

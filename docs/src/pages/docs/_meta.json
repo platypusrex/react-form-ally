@@ -1,7 +1,6 @@
 {
-  "index": "Introduction",
+  "introduction": "Introduction",
   "get-started": "Get started",
   "api": "API",
-  "plugins": "Plugins",
-  "examples": "Examples"
+  "validators": "Validators"
 }

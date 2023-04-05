@@ -18,12 +18,41 @@ const initialValues = {
 };
 export const App = () => {
   const [activeLink, setActiveLink] = useState<string>('custom');
+  const [drawerVisible, toggleDrawer] = useState(false);
   const { values, registerField } = useForm({ initialValues });
-
-  console.log({ values });
 
   return (
     <div className="container">
+      <button className="drawer-toggle" onClick={() => toggleDrawer((prevState) => !prevState)}>
+        {drawerVisible ? 'Close drawer' : 'Configure form'}
+      </button>
+      <div className={`drawer-overlay ${drawerVisible ? 'visible' : ''}`} />
+      <div className={`drawer ${drawerVisible ? 'visible' : ''}`}>
+        <SelectField
+          style={{ paddingBottom: 15, marginTop: 15 }}
+          label="Validation type"
+          id="validationType"
+          {...registerField('validationType')}
+          options={validationTypes.map((type) => ({ value: type, name: type }))}
+        />
+
+        {values.validationType === 'change' && (
+          <>
+            <TextField
+              type="number"
+              label="Debounce in"
+              id="debounce-in"
+              {...registerField('debounceIn')}
+            />
+            <TextField
+              type="number"
+              label="Debounce out"
+              id="debounce-out"
+              {...registerField('debounceOut')}
+            />
+          </>
+        )}
+      </div>
       <div className="button-wrapper space-around">
         <Button variant="link" onClick={() => setActiveLink('custom')}>
           Custom
@@ -38,30 +67,6 @@ export const App = () => {
           Yup
         </Button>
       </div>
-      <SelectField
-        style={{ paddingBottom: 15, marginTop: 15 }}
-        label="Validation type"
-        id="validationType"
-        {...registerField('validationType')}
-        options={validationTypes.map((type) => ({ value: type, name: type }))}
-      />
-
-      {values.validationType === 'change' && (
-        <div className="debounce-fields">
-          <TextField
-            type="number"
-            label="Debounce in"
-            id="debounce-in"
-            {...registerField('debounceIn')}
-          />
-          <TextField
-            type="number"
-            label="Debounce out"
-            id="debounce-out"
-            {...registerField('debounceOut')}
-          />
-        </div>
-      )}
 
       {activeLink === 'custom' && (
         <CustomValidatorForm
