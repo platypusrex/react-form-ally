@@ -61,15 +61,11 @@ body {
   top: 0;
   left: -500px;
   bottom: 0;
-  /*transform: translateX(-500px);*/
-  /*transition: transform 0.4s cubic-bezier(.19,.54,.74,.53);*/
   transition: left .5s cubic-bezier(0.820, 0.085, 0.395, 0.895);
   z-index: 1;
 }
 
 .drawer.visible {
-  /*transform: translateX(0);*/
-  /*transition: transform 0.2s cubic-bezier(.19,.54,.74,.53);*/
   left: 0;
   transition: left .5s cubic-bezier(0.820, 0.085, 0.395, 0.895);
 }
