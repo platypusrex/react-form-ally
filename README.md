@@ -10,6 +10,8 @@ applications, all while improving code quality and maintainability. And of cours
 which means not only will you have gained the confidence of the additional type checking, you will also reap the
 kind of DX that one should expect from any TS library.
 
+**Full documentation [here](https://react-form-ally-docs.vercel.app/)**
+
 ## Installation
 **npm**
 ```bash copy
