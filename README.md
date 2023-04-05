@@ -1,81 +1,100 @@
-# Turborepo starter
+<img src="https://github.com/platypusrex/react-form-ally/blob/master/docs/public/default.svg" data-canonical-src="https://github.com/platypusrex/react-form-ally/blob/master/docs/public/default.svg" width="500" />
 
-This is an official pnpm starter turborepo.
+Welcome and thanks for checking out `react-form-ally`, a React hook that simplifies form handling in React applications.
+`react-form-ally` provides developers with a simple and easy-to-use API to manage form state, validation, and
+submission logic. It is highly customizable, and you can configure it to work with any form validation library or
+schema. It is also framework-agnostic, and you can use it with any frontend framework or library that supports React.
 
-## What's inside?
+Overall, this hook helps reduce the amount of boilerplate code generally required for form management in a React
+applications, all while improving code quality and maintainability. And of course its also written in TypeScript,
+which means not only will you have gained the confidence of the additional type checking, you will also reap the
+kind of DX that one should expect from any TS library.
 
-This turborepo uses [pnpm](https://pnpm.io) as a package manager. It includes the following
-packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `ui`: a stub React component library shared by both `web` and `docs` applications
-- `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and
-  `eslint-config-prettier`)
-- `tsconfig`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
+## Installation
+**npm**
+```bash copy
+npm install --save @react-form-ally/hook
 ```
-cd my-turborepo
-pnpm run build
+**yarn**
+```bash copy
+yarn add @react-form-ally/hook
+```
+**pnpm**
+```bash copy
+pnpm add @react-form-ally/hook
 ```
 
-### Develop
+## Usage
+With a familiar and intuitive API, it's super easy to get started with `react-form-ally`. This example will show you
+how to get going without the aid of internal or external validators. For more complex examples, see the various examples
+showcasing custom validators [here](https://github.com/platypusrex/react-form-ally/tree/master/examples/form-hook).
 
-To develop all apps and packages, run the following command:
+```tsx filename="Login.tsx"
+import { useForm } from '@react-form-ally/hook';
 
+type FormValues = {
+  email: string;
+  password: string;
+}
+
+const initialValues: FormValues = {
+  email: '',
+  password: '',
+};
+
+export const Login: React.FC = () => {
+  const {
+    registerField,
+    errors,
+    touched,
+    valid,
+    onSubmit,
+    onReset,
+  } = useForm<FormValues>({
+    initialValues,
+    validation: {
+      type: 'submit',
+      schema: (values) => {
+        const errors = {};
+
+        if (!values.email) {
+          errors.email = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+          errors.email = 'Invalid email address';
+        }
+
+        if (!values.password) {
+          errors.password = 'Password is required';
+        } else if (values.password.length < 8) {
+          errors.password = 'Password must be at least 8 characters long';
+        }
+
+        return { errors };
+      },
+    },
+  });
+
+  const handleSubmit = (formValues: FormValues) => {
+    console.log('Submitting form', formValues);
+  };
+
+  return (
+    <form onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
+      <input type="email" {...registerField('email')} />
+      {touched.email && errors.email && <div>{errors.email}</div>}
+
+      <input type="password" {...registerField('password')} />
+      {touched.password && errors.password && <div>{errors.password}</div>}
+
+      <button type="submit" disabled={!valid}>
+        Submit
+      </button>
+      <button type="reset">
+        Reset
+      </button>
+    </form>
+  );
+};
 ```
-cd my-turborepo
-pnpm run dev
-```
 
-### Remote Caching
 
-Turborepo can use a technique known as
-[Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache
-artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with
-Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the
-following commands:
-
-```
-cd my-turborepo
-pnpm dlx turbo login
-```
-
-This will authenticate the Turborepo CLI with your
-[Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the
-root of your turborepo:
-
-```
-pnpm dlx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
