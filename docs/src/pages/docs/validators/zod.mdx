@@ -1,8 +1,8 @@
 # Zod Validator
 
 As mentioned earlier in the docs, the `react-form-ally` validation API is super flexible making it relatively simple to integrate
-support for third party validation libraries. `Zod` is one of those already supported modules and can be installed as
-a third-party dependency. You will also need to install the `zod` module as it is peer dependency.
+support for third party validation libraries. [Zod](https://zod.dev) is one of those already supported modules and can be installed as
+a third-party dependency. You will also need to install the [zod](https://zod.dev) module as it is peer dependency.
 
 ### Installation
 **npm**
@@ -18,7 +18,7 @@ yarn add @react-form-ally/zod-validator zod
 pnpm add @react-form-ally/zod-validator zod
 ```
 
-When using the `zod` validator, you can also take advantage of using the libraries type inference which allows you to
+When using the [zod](https://zod.dev) validator, you can also take advantage of using the libraries type inference which allows you to
 use the defined schema object to provide type support for your form.
 
 ### Usage
@@ -45,7 +45,7 @@ const initialValues: FormValues = {
   password: '',
 };
 
-export const LoginForm: React.FC= () => {
+export const LoginForm: React.FC = () => {
   const { registerField, errors, onSubmit, onReset, valid, setFieldsValues } = useForm<FormValues>({
     initialValues,
     validation: {

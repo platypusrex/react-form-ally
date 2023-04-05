@@ -34,7 +34,7 @@
     "clean": "turbo run clean --parallel",
     "clean:deps": "turbo run clean:deps --parallel",
     "clean:all": "turbo run clean:all --parallel",
-    "build": "turbo run build -v",
+    "build": "turbo run build",
     "build:docs": "turbo run build --filter=docs",
     "build:packages": "turbo run build --filter=@react-form-ally/*",
     "dev": "turbo run dev",
