@@ -1,6 +1,6 @@
 {
   "name": "@react-form-ally/zod-validator",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Frank Cooke",
   "description": "A companion zod validation module for react-form-ally",
   "license": "MIT",
