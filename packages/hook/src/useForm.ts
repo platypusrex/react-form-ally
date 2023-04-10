@@ -83,7 +83,11 @@ export type UseForm<TValues extends FormValues<any> = FormValues<any>> = {
   setFieldsErrors: SetErrors<TValues>;
   setFieldTouched: SetFieldTouched<TValues>;
   setFieldsTouched: SetTouched<TValues>;
+  /**
+   * @deprecated Proposal to rename to field props to clarify how it's used
+   */
   registerField: RegisterField<TValues>;
+  fieldProps: RegisterField<TValues>;
   values: FormValues<TValues>;
   errors: FormErrors<TValues>;
   touched: FormTouched<TValues>;
@@ -272,5 +276,6 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
     setFieldTouched,
     setFieldsTouched,
     registerField,
+    fieldProps: registerField,
   };
 };

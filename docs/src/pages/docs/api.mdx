@@ -90,8 +90,8 @@ const form = useForm<FormValues>({
 });
 ```
 
-## registerField
-the `registerField` function is a utility function for registering form fields and their properties in a
+## fieldProps
+the `fieldProps` function is a utility function for registering form fields and their properties in a
 type-safe manner. It takes in two arguments - `fieldName` and `options` - and returns a
 `RegisterFieldResult`.
 
@@ -147,14 +147,14 @@ export type RegisterField<TValues extends FormValues<any>> = (
 ) => RegisterFieldResult;
 ```
 
-```tsx /registerField/
-const { registerField } = useForm({
+```tsx /fieldProps/
+const { fieldProps } = useForm({
  // ...
 });
 
 return (
   <form>
-    <input type="email" {...registerField('email', { id: 'email', required: true })} />
+    <input type="email" {...fieldProps('email', { id: 'email', required: true })} />
     {/* ... */}
   </form>
 );
@@ -571,7 +571,7 @@ type FormValues = {
   email: string;
 }
 
-const { values, registerField } = useForm<FormValues>({
+const { values, fieldProps } = useForm<FormValues>({
  initialValues: {
    email: '',
  },
@@ -579,7 +579,7 @@ const { values, registerField } = useForm<FormValues>({
 
 return (
   <form>
-    <input type="email" {...registerField('email')} />
+    <input type="email" {...fieldProps('email')} />
     {values.email && <div>Current value: {values.email}</div>}
     // ..
   </form>
@@ -604,7 +604,7 @@ type FormValues = {
   email: string;
 }
 
-const { errors, registerField } = useForm<FormValues>({
+const { errors, fieldProps } = useForm<FormValues>({
  initialValues: {
    email: '',
  },
@@ -612,7 +612,7 @@ const { errors, registerField } = useForm<FormValues>({
 
 return (
   <form>
-    <input type="email" {...registerField('email')} />
+    <input type="email" {...fieldProps('email')} />
     {errors.email && <div>{errors.email}</div>}
     // ..
   </form>
@@ -637,7 +637,7 @@ type FormValues = {
   email: string;
 }
 
-const { touched, errors, registerField } = useForm<FormValues>({
+const { touched, errors, fieldProps } = useForm<FormValues>({
   initialValues: {
    email: '',
   },
@@ -645,7 +645,7 @@ const { touched, errors, registerField } = useForm<FormValues>({
 
 return (
   <form>
-    <input type="email" {...registerField('email')} />
+    <input type="email" {...fieldProps('email')} />
     {touched.email && errors.email && <div>{errors.email}</div>}
     // ..
   </form>
