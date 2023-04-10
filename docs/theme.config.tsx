@@ -99,6 +99,11 @@ const config: DocsThemeConfig = {
   themeSwitch: {
     component: null,
   },
+  useNextSeoProps() {
+    return {
+      titleTemplate: '%s – React Form Ally',
+    };
+  },
 };
 
 export default config;
