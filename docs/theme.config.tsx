@@ -76,7 +76,7 @@ const config: DocsThemeConfig = {
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 180px;
+            width: 150px;
           }
 
           .footer-logo {
@@ -85,7 +85,7 @@ const config: DocsThemeConfig = {
 
           .footer-copywrite {
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
           }
 
           .footer-copywrite a {
