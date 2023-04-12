@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {
       minHeight: {
-        inherit: 'inherit',
+        full: 'calc(100vh - 4rem)',
       },
     },
   },
