@@ -5,7 +5,7 @@ import { ParticlesBG } from './ParticlesBG';
 export const Home: React.FC = () => (
   <>
     <ParticlesBG />
-    <div className="flex justify-center min-h-inherit relative">
+    <div className="flex justify-center min-h-full relative px-6">
       <div className="px-4 flex flex-col justify-center items-center max-w-2xl">
         <div className="w-24 mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 35">
