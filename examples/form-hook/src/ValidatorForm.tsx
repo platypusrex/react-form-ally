@@ -1,11 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  Debounce,
-  useForm,
-  ValidationType,
-  validator,
-  ValidatorSchema,
-} from '@react-form-ally/hook';
+import { Debounce, useForm, ValidationType, validator, ValidatorSchema } from './form-hook';
 import { TextField } from './components/TextField';
 import { Button } from './components/Button';
 
@@ -63,6 +57,8 @@ export const ValidatorForm: React.FC<ValidationFormProps> = ({ type, debounce })
   const handleSubmit = (formValues: FormValues) => {
     alert(JSON.stringify(formValues, null, 2));
   };
+
+  console.log('rendered');
 
   return (
     <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>

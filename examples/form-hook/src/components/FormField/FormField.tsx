@@ -9,22 +9,16 @@ interface FormFieldProps {
   style?: React.CSSProperties;
 }
 
-export const FormField = React.memo<FormFieldProps>(
-    ({
-    id,
-    label,
-    error,
-    style,
-    children
-  }) => (
-    <div className="form-field" style={style}>
-      <label className="label" htmlFor={id}>{label}</label>
-      {children}
-      {error && (
-        <div className="error-container">
-          <p className="error">{error}</p>
-        </div>
-      )}
-    </div>
-  )
-);
+export const FormField = React.memo<FormFieldProps>(({ id, label, error, style, children }) => (
+  <div className="form-field" style={style}>
+    <label className="label" htmlFor={id}>
+      {label}
+    </label>
+    {children}
+    {error && (
+      <div className="error-container">
+        <p className="error">{error}</p>
+      </div>
+    )}
+  </div>
+));

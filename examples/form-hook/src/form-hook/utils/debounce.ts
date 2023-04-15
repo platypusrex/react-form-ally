@@ -1,4 +1,9 @@
-export function debounce(fn: (...args: any[]) => any, wait?: number, callFirst?: boolean) {
+import { DebouncedFunc } from '../types';
+
+export function debounce<TFunc extends (...args: any[]) => any = (...args: any[]) => any>(
+  fn: (...args: any[]) => any,
+  wait?: number
+): DebouncedFunc<TFunc> {
   let timeout: number | null = null;
   let debouncedFn: ((...args: any[]) => any) | null = null;
 
@@ -22,36 +27,31 @@ export function debounce(fn: (...args: any[]) => any, wait?: number, callFirst?:
 
   function debounceWrapper(this: typeof debounceWrapper) {
     if (!wait) {
+      // eslint-disable-next-line prefer-rest-params
       return fn.apply(this, arguments as any);
     }
 
-    const context = this;
+    // eslint-disable-next-line prefer-rest-params
     const args = arguments;
-    const callNow = callFirst && !timeout;
     clear();
 
     debouncedFn = () => {
-      fn.apply(context, args as any);
+      fn.apply(this, args as any);
     };
 
+    // @ts-ignore
     timeout = setTimeout(function () {
       timeout = null;
 
-      if (!callNow) {
-        const call = debouncedFn;
-        debouncedFn = null;
+      const call = debouncedFn;
+      debouncedFn = null;
 
-        return call?.();
-      }
+      return call?.();
     }, wait);
-
-    if (callNow) {
-      return debouncedFn();
-    }
   }
 
   debounceWrapper.cancel = clear;
   debounceWrapper.flush = flush;
 
-  return debounceWrapper;
+  return debounceWrapper as DebouncedFunc<TFunc>;
 }
