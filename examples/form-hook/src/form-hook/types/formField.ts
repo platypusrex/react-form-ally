@@ -9,7 +9,7 @@ export type RegisterFieldOptions = {
   maxLength?: number;
   min?: number | string;
   minLength?: number;
-  pattern?: RegExp;
+  pattern?: string;
   placeholder?: string;
   readOnly?: boolean;
 };

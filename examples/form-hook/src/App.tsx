@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useForm, ValidationType } from '@react-form-ally/hook';
+import React, { useEffect, useState } from 'react';
+import { useForm, ValidationType } from './form-hook';
 import { Button } from './components/Button';
 import { SelectField } from './components/SelectField';
 import { TextField } from './components/TextField';
@@ -8,18 +8,48 @@ import { ValidatorForm } from './ValidatorForm';
 import { ZodValidatorForm } from './ZodValidatorForm';
 import { YupValidatorForm } from './YupValidatorForm';
 import './App.css';
+import { FormField } from './components/FormField';
 
 const validationTypes = ['change', 'blur', 'submit'] as const;
 
-const initialValues = {
+type FormValues = {
+  validationType: (typeof validationTypes)[number];
+  debounce: boolean;
+  debounceIn?: number;
+  debounceOut?: number;
+};
+
+const initialValues: FormValues = {
   validationType: 'change',
-  debounceIn: 500,
-  debounceOut: 0,
+  debounce: false,
 };
 export const App = () => {
   const [activeLink, setActiveLink] = useState<string>('custom');
   const [drawerVisible, toggleDrawer] = useState(false);
-  const { values, registerField } = useForm({ initialValues });
+  const { values, registerField, setFieldsValues } = useForm<FormValues>({ initialValues });
+
+  const { id, name, onBlur, onChange } = registerField('debounce');
+
+  useEffect(() => {
+    if (values.debounce) {
+      const formValues = {} as FormValues;
+      if (!values.debounceIn) formValues.debounceIn = 500;
+      if (!values.debounceOut) formValues.debounceOut = 0;
+      if (Object.keys(formValues).length) {
+        console.log(formValues);
+        setFieldsValues(formValues);
+      }
+    }
+
+    if (!values.debounce) {
+      const formValues = {} as FormValues;
+      if (values.debounceIn !== undefined) formValues.debounceIn = undefined;
+      if (values.debounceOut !== undefined) formValues.debounceOut = undefined;
+      if (Object.keys(formValues).length) {
+        setFieldsValues(formValues);
+      }
+    }
+  }, [values.debounce, values.debounceIn, values.debounceOut]);
 
   return (
     <div className="container">
@@ -38,18 +68,33 @@ export const App = () => {
 
         {values.validationType === 'change' && (
           <>
-            <TextField
-              type="number"
-              label="Debounce in"
-              id="debounce-in"
-              {...registerField('debounceIn')}
-            />
-            <TextField
-              type="number"
-              label="Debounce out"
-              id="debounce-out"
-              {...registerField('debounceOut')}
-            />
+            <FormField id="debounce" label="Debounce" style={{ paddingBottom: '1rem' }}>
+              <input
+                style={{ width: 'fit-content' }}
+                type="checkbox"
+                checked={values.debounce}
+                id={id}
+                name={name}
+                onChange={onChange}
+                onBlur={onBlur}
+              />
+            </FormField>
+            {values.debounce && (
+              <>
+                <TextField
+                  type="number"
+                  label="Debounce in"
+                  id="debounce-in"
+                  {...registerField('debounceIn')}
+                />
+                <TextField
+                  type="number"
+                  label="Debounce out"
+                  id="debounce-out"
+                  {...registerField('debounceOut')}
+                />
+              </>
+            )}
           </>
         )}
       </div>
