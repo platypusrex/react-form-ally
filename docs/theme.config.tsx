@@ -99,6 +99,13 @@ const config: DocsThemeConfig = {
   themeSwitch: {
     component: null,
   },
+  useNextSeoProps() {
+    const { asPath } = useRouter();
+    const baseTitle = 'React Form Ally';
+    return {
+      titleTemplate: asPath === '/' ? baseTitle : `%s – ${baseTitle}`,
+    };
+  },
 };
 
 export default config;
