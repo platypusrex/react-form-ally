@@ -20,3 +20,5 @@ export interface NameAndValue {
 export type InputChangeEvent = ChangeEvent<any>;
 
 export type OnChangeEvent = InputChangeEvent | NameAndValue;
+
+export type AnyObject = Record<string, any>;

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TextField } from './components/TextField';
+import { TextField } from '../../components/TextField';
 
 export const InputTestForm: React.FC = () => {
   const handleOnChange = (e: any) => {

@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, FocusEventHandler } from "react";
 import { FormField } from '../FormField/FormField';
 import './SelectField.css';
 
 interface SelectFieldProps {
-  id: string;
+  id?: string;
   name: string;
   value?: any;
   options: {
@@ -14,17 +14,20 @@ interface SelectFieldProps {
   label: string;
   error?: string;
   onChange?: (e: ChangeEvent<HTMLSelectElement>) => void;
+  onBlur?: FocusEventHandler;
   style?: React.CSSProperties;
 }
 
-export const SelectField = React.memo<SelectFieldProps>(
-  ({ id, name, value, options, label, error, style, onChange }) => (
-    <FormField id={id} label={label} error={error} style={style}>
+export const SelectField = React.forwardRef<any, SelectFieldProps>(
+  ({ id, name, value, options, label, error, style, onChange, onBlur }, ref) => (
+    <FormField id={id || ''} label={label} error={error} style={style}>
       <select
+        ref={ref}
         value={value}
         className={`select ${error ? 'error' : ''}`}
         name={name}
         id="state-input"
+        onBlur={onBlur}
         onChange={onChange}
       >
         <option value=""> -- select an option -- </option>

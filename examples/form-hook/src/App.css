@@ -11,11 +11,13 @@ body {
   margin: 0;
   padding: 0;
   position: relative;
+  overflow-x: hidden;
 }
 
 .container {
   max-width: 600px;
   margin: 0 auto;
+  padding: 2rem 1rem;
 }
 
 .drawer-overlay {
@@ -37,14 +39,26 @@ body {
 }
 
 .drawer-toggle {
-  position: fixed;
-  top: 2rem;
-  left: 2rem;
-  z-index: 2;
   background: #f2f2f2;
   font-size: 1.2rem;
   border: 1px solid #d8d8d8;
   padding: 0.5rem 1rem;
+}
+
+.drawer-close {
+  font-size: 1.8rem;
+  width: 32px;
+  height: 32px;
+  grid-column: span 2;
+  justify-self: end;
+  background-color: tomato;
+  border: none;
+  border-radius: 50%;
+  padding: 5px;
+  display: flex;
+  color: #fff;
+  align-items: center;
+  justify-content: center;
 }
 
 .drawer {
@@ -54,23 +68,24 @@ body {
   max-width: 100%;
   grid-column-gap: 1rem;
   position: absolute;
-  padding: 5rem 2rem 2rem;
+  padding: 2rem 2rem;
   box-shadow: 0 2px 12px -5px rgba(0, 0, 0, 0.5);
   width: 400px;
   background-color: #fff;
   top: 0;
-  left: -500px;
+  right: -500px;
   bottom: 0;
-  transition: left .3s cubic-bezier(0.820, 0.085, 0.395, 0.895);
+  transition: right .3s cubic-bezier(0.820, 0.085, 0.395, 0.895);
   z-index: 1;
 }
 
 .drawer.visible {
-  left: 0;
-  transition: left .3s cubic-bezier(0.820, 0.085, 0.395, 0.895);
+  right: 0;
+  transition: right .3s cubic-bezier(0.820, 0.085, 0.395, 0.895);
 }
 
-.drawer .form-field:first-child, .drawer .form-field:nth-of-type(2) {
+.drawer .form-field:first-of-type,
+.drawer .form-field:nth-of-type(2) {
   grid-column: span 2;
 }
 
@@ -93,9 +108,12 @@ body {
   justify-content: space-around;
 }
 
-.form {
-  width: 100%;
-  padding-bottom: 2.5em;
+.form-page {
+  padding: 0 2rem 2.5rem;
+}
+
+.form-page h1 {
+  font-size: 2.2rem;
 }
 
 .form h1 {
@@ -184,4 +202,21 @@ body {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(2, 1fr);
+}
+
+.link{
+  height: 45px;
+  font-size: 1.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  width: fit-content;
+}
+
+.link:hover {
+  text-decoration: underline;
+  background: transparent !important;
 }

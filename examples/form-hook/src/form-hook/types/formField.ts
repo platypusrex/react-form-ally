@@ -1,5 +1,6 @@
 import type { ChangeEventHandler, FocusEventHandler } from 'react';
 import { FormValues } from './common';
+import { HTMLInputTypeAttribute } from "react";
 
 export type RegisterFieldOptions = {
   id?: string;
@@ -12,16 +13,24 @@ export type RegisterFieldOptions = {
   pattern?: string;
   placeholder?: string;
   readOnly?: boolean;
+  type?: HTMLInputTypeAttribute;
 };
 
 export type RegisterFieldResult = RegisterFieldOptions & {
   name: string;
   onChange: ChangeEventHandler<any>;
   onBlur: FocusEventHandler<any>;
-  value: string | number;
+  value?: string | number;
 };
 
 export type RegisterField<TValues extends FormValues<any>> = (
   fieldName: keyof TValues,
   options?: RegisterFieldOptions
+) => RegisterFieldResult;
+
+export type RegisterRadioField<TValues extends FormValues<any>> = (
+  fieldName: keyof TValues,
+  options: RegisterFieldOptions & {
+    value: string;
+  }
 ) => RegisterFieldResult;
