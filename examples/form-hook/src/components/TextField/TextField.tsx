@@ -4,20 +4,21 @@ import { FormField } from '../FormField';
 import './TextField.css';
 
 interface TextFieldProps {
-  id: string;
+  id?: string;
   name: string;
   value?: string | number;
-  type: string;
+  type?: string;
   label: string;
   error?: string;
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   onBlur?: FocusEventHandler<HTMLInputElement>;
 }
 
-export const TextField = React.memo<TextFieldProps>(
-  ({ id, name, value, type, label, error, onChange, onBlur }) => (
+export const TextField = React.forwardRef<any, TextFieldProps>(
+  ({ id = '', name, value, type = 'text', label, error, onChange, onBlur }, ref) => (
     <FormField id={id} label={label} error={error}>
       <input
+        ref={ref}
         className={`text-input ${error ? 'error' : ''}`}
         id={id}
         type={type}

@@ -1,0 +1,10 @@
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  font-size: 2.4rem;
+  margin-block-end: 1rem;
+}
+
+.inputGroup input {
+  margin-inline-end: 0.875rem;
+}
