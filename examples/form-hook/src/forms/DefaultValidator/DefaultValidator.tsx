@@ -1,8 +1,8 @@
-import React from 'react';
-import { validator, ValidatorSchema } from '../../form-hook';
-import { useForm2 } from '../../form-hook/useForm2';
+import React, { useEffect } from 'react';
+import { useForm, validator, ValidatorSchema } from '@react-form-ally/hook';
 import { TextField } from '../../components/TextField';
 import { Button } from '../../components/Button';
+import { FormControls, useFormControls } from '../../components/FormControls';
 
 type FormValues = {
   name: string;
@@ -32,26 +32,43 @@ const schema: ValidatorSchema<FormValues> = {
 };
 
 export const DefaultValidator: React.FC = () => {
-  const { registerInput, errors, valid, values, onSubmit, onReset } = useForm2<FormValues>({
-    input: {
-      initialValues,
-      type: 'uncontrolled',
-    },
-    validation: {
-      type: 'change',
-      debounce: {
-        in: 1000,
-        out: 0,
+  const formControls = useFormControls();
+  const {
+    values: { validationType, debounce, debounceIn, debounceOut },
+  } = formControls;
+
+  const { registerInput, errors, valid, onSubmit, onReset, setFieldsValues, focusField } =
+    useForm<FormValues>({
+      input: {
+        initialValues,
+        type: 'uncontrolled',
       },
-      schema: validator(schema),
-    },
-  });
+      validation: {
+        type: validationType,
+        ...(validationType === 'change' && debounce
+          ? {
+              debounce: {
+                in: debounceIn ? Number(debounceIn) : 0,
+                out: debounceOut ? Number(debounceOut) : 0,
+              },
+            }
+          : {}),
+        schema: validator(schema),
+      },
+    });
+
+  useEffect(() => {
+    focusField('name');
+    setFieldsValues({ name: 'Frank', password: 'password' });
+  }, []);
 
   const handleSubmit = (formValues: FormValues) => {
     alert(JSON.stringify(formValues, null, 2));
   };
 
-  console.log('rendered', values, errors);
+  const handleSubmitFormConfig = () => {
+    onReset();
+  };
 
   return (
     <div className="form-page">
@@ -64,46 +81,37 @@ export const DefaultValidator: React.FC = () => {
         }}
       >
         <h1>Default</h1>
+        <FormControls handleSubmit={handleSubmitFormConfig} {...formControls} />
       </div>
       <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
         <div className="form-container">
           <TextField
             label="name"
-            id="name"
-            type="text"
             error={errors.name}
-            {...registerInput('name')}
+            {...registerInput('name', { id: 'name', type: 'text' })}
           />
           <TextField
             label="website"
-            id="website"
-            type="url"
             error={errors.website}
-            {...registerInput('website')}
+            {...registerInput('website', { id: 'website', type: 'url' })}
           />
           <TextField
             label="email"
-            id="email"
-            type="email"
             error={errors.email}
-            {...registerInput('email')}
+            {...registerInput('email', { id: 'email', type: 'email' })}
           />
           <TextField
             label="password"
-            id="password"
-            type="password"
             error={errors.password}
-            {...registerInput('password')}
+            {...registerInput('password', { id: 'password', type: 'password' })}
           />
           <TextField
             label="street"
-            id="street"
-            type="text"
             error={errors.street}
-            {...registerInput('street')}
+            {...registerInput('street', { id: 'street', type: 'text' })}
           />
         </div>
-        <Button disabled={!valid} style={{ marginBottom: 20 }}>
+        <Button disabled={!valid && validationType !== 'submit'} style={{ marginBottom: 20 }}>
           Submit
         </Button>
         <Button type="reset">Reset</Button>

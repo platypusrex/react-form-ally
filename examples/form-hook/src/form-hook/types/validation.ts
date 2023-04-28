@@ -73,16 +73,16 @@ export type BaseValidation<TValues extends FormValues<any>> = {
 };
 
 export type ChangeValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
-  type?: 'change';
+  type?: Extract<ValidationType, 'change'>;
   debounce?: Debounce;
 };
 
 export type BlurValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
-  type?: 'blur';
+  type?: Extract<ValidationType, 'blur'>;
 };
 
 export type SubmitValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
-  type?: 'submit';
+  type?: Extract<ValidationType, 'submit'>;
 };
 
 export type Validation<TValues extends FormValues<any>> =

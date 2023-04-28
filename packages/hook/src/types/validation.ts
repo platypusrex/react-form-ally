@@ -41,12 +41,12 @@ export type ValidatorResult<TValues extends FormValues<any>> = {
   };
 };
 
-export type Debounce =
-  | number
-  | {
-      in: number;
-      out: number;
-    };
+export type DebounceObject = {
+  in: number;
+  out: number;
+};
+
+export type Debounce = number | DebounceObject;
 
 export type DebouncedFunc<T extends (...args: any[]) => any> = {
   (...args: Parameters<T>): ReturnType<T> | undefined;
@@ -56,14 +56,10 @@ export type DebouncedFunc<T extends (...args: any[]) => any> = {
   flush(): ReturnType<T> | undefined;
 };
 
-export type ValidationFn<TValues extends FormValues<any>> = (
-  fieldName: keyof TValues,
-  error: undefined | string
-) => void;
-
-export type DebounceValidationFn<TValues extends FormValues<any>> = {
-  in: DebouncedFunc<ValidationFn<TValues>> | ValidationFn<TValues>;
-  out: DebouncedFunc<ValidationFn<TValues>> | ValidationFn<TValues>;
+export type DebounceState<TValue> = {
+  [key in keyof { in: number; out: number }]: {
+    [key in keyof TValue]: DebouncedFunc<any>;
+  };
 };
 
 export type ValidationType = 'change' | 'blur' | 'submit';
@@ -73,16 +69,16 @@ export type BaseValidation<TValues extends FormValues<any>> = {
 };
 
 export type ChangeValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
-  type?: 'change';
+  type?: Extract<ValidationType, 'change'>;
   debounce?: Debounce;
 };
 
 export type BlurValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
-  type?: 'blur';
+  type?: Extract<ValidationType, 'blur'>;
 };
 
 export type SubmitValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
-  type?: 'submit';
+  type?: Extract<ValidationType, 'submit'>;
 };
 
 export type Validation<TValues extends FormValues<any>> =

@@ -14,15 +14,26 @@ const initialValues = {
 
 export const CustomValidator: React.FC = () => {
   const formControls = useFormControls();
-  const { registerField, errors, onSubmit, onReset, valid, setFieldValue } = useForm<
+  const {
+    values: { validationType, debounce, debounceIn, debounceOut },
+  } = formControls;
+
+  const { registerInput, errors, onSubmit, onReset, valid, setFieldValue } = useForm<
     typeof initialValues
   >({
-    initialValues,
+    input: {
+      initialValues,
+      type: 'uncontrolled',
+    },
     validation: {
-      // @ts-ignore
-      type: formControls.values.validationType,
-      ...(formControls.values.validationType === 'change'
-        ? { debounce: { in: formControls.values.debounceIn, out: formControls.values.debounceOut } }
+      type: validationType,
+      ...(validationType === 'change' && debounce
+        ? {
+            debounce: {
+              in: debounceIn ? Number(debounceIn) : 0,
+              out: debounceOut ? Number(debounceOut) : 0,
+            },
+          }
         : {}),
       schema: (values) => {
         const requiredKeys = ['name', 'email', 'password'];
@@ -46,48 +57,42 @@ export const CustomValidator: React.FC = () => {
     alert(JSON.stringify(formValues, null, 2));
   };
 
+  const handleSubmitFormConfig = () => {
+    onReset();
+  };
+
   return (
     <div className="form-page">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1>Custom</h1>
-        <FormControls {...formControls} />
+        <FormControls handleSubmit={handleSubmitFormConfig} {...formControls} />
       </div>
       <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
         <div className="form-container">
           <TextField
             label="name"
-            id="name"
-            type="text"
             error={errors.name}
-            {...registerField('name')}
+            {...registerInput('name', { type: 'text', id: 'name' })}
           />
           <TextField
             label="website"
-            id="website"
-            type="url"
             error={errors.website}
-            {...registerField('website')}
+            {...registerInput('website', { type: 'url', id: 'website' })}
           />
           <TextField
             label="email"
-            id="email"
-            type="email"
             error={errors.email}
-            {...registerField('email')}
+            {...registerInput('email', { type: 'email', id: 'email' })}
           />
           <TextField
             label="password"
-            id="password"
-            type="password"
             error={errors.password}
-            {...registerField('password')}
+            {...registerInput('password', { type: 'password', id: 'password' })}
           />
           <TextField
             label="street"
-            id="street"
-            type="text"
             error={errors.street}
-            {...registerField('street')}
+            {...registerInput('street', { type: 'text', id: 'street' })}
           />
         </div>
         <Button
