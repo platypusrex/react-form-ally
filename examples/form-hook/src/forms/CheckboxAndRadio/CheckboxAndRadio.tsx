@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { validator, ValidatorSchema } from '../../form-hook';
-import { useForm2 } from '../../form-hook/useForm2';
+import React from 'react';
+import { useForm, validator, ValidatorSchema } from '@react-form-ally/hook';
 import { SelectField } from '../../components/SelectField';
 import { FormControls, useFormControls } from '../../components/FormControls';
 import { Button } from '../../components/Button';
@@ -25,19 +24,22 @@ const schema: ValidatorSchema<FormValues> = {
 
 export const CheckboxAndRadio: React.FC = () => {
   const formControls = useFormControls();
+  const {
+    values: { inputType, validationType, debounce, debounceIn, debounceOut },
+  } = formControls;
   const { onSubmit, onReset, registerInput, registerCheckbox, registerRadio, valid, values } =
-    useForm2<FormValues>({
+    useForm<FormValues>({
       input: {
         initialValues,
-        type: 'uncontrolled',
+        type: inputType,
       },
       validation: {
-        type: 'blur',
-        ...(formControls.values.validationType === 'change'
+        type: validationType,
+        ...(validationType === 'change' && debounce
           ? {
               debounce: {
-                in: formControls.values.debounceIn,
-                out: formControls.values.debounceOut,
+                in: debounceIn ? Number(debounceIn) : 0,
+                out: debounceOut ? Number(debounceOut) : 0,
               },
             }
           : {}),
@@ -45,12 +47,9 @@ export const CheckboxAndRadio: React.FC = () => {
       },
     });
 
-  console.log('rendered', { ...values, valid });
-
-  // useEffect(() => {
-  //   onReset();
-  //   // @ts-ignore
-  // }, [formControls.values.validationType]);
+  const handleUpdateConfig = () => {
+    onReset();
+  };
 
   const handleSubmit = (values: FormValues) => {
     alert(JSON.stringify(values, null, 2));
@@ -67,7 +66,7 @@ export const CheckboxAndRadio: React.FC = () => {
         }}
       >
         <h1>Checkbox/Radio</h1>
-        <FormControls {...formControls} />
+        <FormControls handleSubmit={handleUpdateConfig} {...formControls} />
       </div>
       <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
         <div className={styles.inputGroup}>
@@ -118,10 +117,7 @@ export const CheckboxAndRadio: React.FC = () => {
           ]}
           {...registerInput('favoriteNumber', { id: 'favorite-number' })}
         />
-        <Button
-          disabled={!valid && formControls.values.validationType !== 'submit'}
-          style={{ marginBottom: 20 }}
-        >
+        <Button disabled={!valid && validationType !== 'submit'} style={{ marginBottom: 20 }}>
           Submit
         </Button>
         <Button type="reset">Reset</Button>

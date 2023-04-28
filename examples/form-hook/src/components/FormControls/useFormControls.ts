@@ -1,8 +1,10 @@
-import { useForm } from '../../form-hook';
+import { useForm } from '@react-form-ally/hook';
 
 const validationTypes = ['change', 'blur', 'submit'] as const;
+const inputTypes = ['uncontrolled', 'controlled'] as const;
 
 export type FormControlValues = {
+  inputType: (typeof inputTypes)[number];
   validationType: (typeof validationTypes)[number];
   debounce: boolean;
   debounceIn?: number;
@@ -10,6 +12,7 @@ export type FormControlValues = {
 };
 
 const initialValues = {
+  inputType: 'uncontrolled',
   validationType: 'change',
   debounce: false,
   debounceIn: undefined,
@@ -18,9 +21,8 @@ const initialValues = {
 
 export const useFormControls = () =>
   useForm<FormControlValues>({
-    initialValues,
-    validation: {
-      type: 'submit',
-      schema: () => ({ errors: {} }),
+    input: {
+      initialValues,
+      type: 'uncontrolled',
     },
   });

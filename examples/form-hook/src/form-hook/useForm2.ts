@@ -1,92 +1,28 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { ChangeEventHandler, FocusEventHandler, FormEvent } from 'react';
-import { useEventCallback, useFormState } from './hooks';
-import { debounce, getDebounceTimers, getValidationType, isEqualObj } from './utils';
-import { createStore } from './store';
+import { useEventCallback, useFieldValidation, useFormState } from './hooks';
+import { shouldDebounceValidation, updateUncontrolledField } from './utils';
 import type {
-  ChangeValidation,
-  DebounceValidationFn,
   DefaultCallback,
   FormErrors,
+  FormState,
   FormTouched,
   FormValues,
-  RegisterField,
-  RegisterRadioField,
+  RegisterCheckboxOptions,
+  RegisterCheckboxResult,
+  RegisterInputOptions,
+  RegisterInputResult,
+  RegisterRadioOptions,
+  RegisterRadioResult,
+  SetError,
+  SetErrors,
+  SetFieldTouched,
+  SetTouched,
+  SetValue,
+  SetValues,
   Submit,
   Validation,
-  ValidationFn,
 } from './types';
-import { useFieldValidation } from './hooks/useFieldValidation';
-
-export const useDebouncedValidation = <TValues extends FormValues<any>>(
-  validation: Validation<TValues> | undefined,
-  store: ReturnType<typeof createStore<TValues>>
-) => {
-  const { setStateAndEmit, getSnapshot } = store;
-  const getFieldValidationDebounceFns = useCallback(
-    (
-      validation?: Validation<TValues>
-    ): undefined | { [key in keyof TValues]: DebounceValidationFn<TValues> } => {
-      if (!validation || getValidationType(validation.type) !== 'change') return;
-
-      const validationFn: ValidationFn<TValues> = (fieldName, error) => {
-        setStateAndEmit((prevState) => ({
-          ...prevState,
-          errors: {
-            ...prevState.errors,
-            [fieldName]: error,
-          },
-        }));
-      };
-
-      const { debounce: fieldDebounce } = validation as ChangeValidation<TValues>;
-      const debounceTimers = getDebounceTimers(fieldDebounce);
-
-      const keys = ['in', 'out'] as const;
-      const fns = keys.reduce((acc, curr) => {
-        acc[curr] = debounceTimers ? debounce(validationFn, debounceTimers[curr]) : validationFn;
-        return acc;
-      }, {} as DebounceValidationFn<TValues>);
-
-      const fieldKeys = Object.keys(getSnapshot().values);
-      const debounceFns = {} as { [key in keyof TValues]: DebounceValidationFn<TValues> };
-      for (const key of fieldKeys) {
-        if (key) {
-          // @ts-ignore
-          debounceFns[key as any] = fns;
-        }
-      }
-      return debounceFns;
-    },
-    [getSnapshot, setStateAndEmit]
-  );
-
-  // the debounce fns need to be stored in a ref or the debounced validation fns are recreated
-  // each time a form field change event occurs
-  const debounceFns = useRef<undefined | Record<keyof TValues, DebounceValidationFn<TValues>>>(
-    getFieldValidationDebounceFns(validation)
-  );
-
-  // This also means we need to manually track whether the debounce validation configs
-  // have changed in any given render cycle, if they have we need to update our current debounce validation fns
-  // with the new debounce config values
-  const debounceTimers = useRef(validation?.type === 'change' && validation.debounce);
-  useEffect(() => {
-    if (validation?.type === 'change' && debounceTimers.current) {
-      const { debounce } = validation;
-      const timers = getDebounceTimers(debounce) ?? {};
-      const currentTimers = getDebounceTimers(debounceTimers.current) ?? {};
-
-      if (!isEqualObj(currentTimers, timers)) {
-        debounceFns.current = getFieldValidationDebounceFns(validation);
-        debounceTimers.current = validation.debounce;
-      }
-    }
-    // @ts-ignore
-  }, [getFieldValidationDebounceFns, validation, validation?.debounce, validation?.type]);
-
-  return debounceFns;
-};
 
 const initialState = {
   submitted: false,
@@ -106,9 +42,22 @@ export type UseFormConfig<TValues extends FormValues<any> = FormValues<any>> = {
 export type UseForm<TValues extends FormValues<any> = FormValues<any>> = {
   onSubmit: Submit<TValues>;
   onReset: DefaultCallback;
-  registerInput: RegisterField<TValues>;
-  registerCheckbox: RegisterField<TValues>;
-  registerRadio: RegisterRadioField<TValues>;
+  resetValues: DefaultCallback;
+  resetErrors: DefaultCallback;
+  resetTouched: DefaultCallback;
+  setFieldValue: SetValue<TValues, keyof TValues>;
+  setFieldsValues: SetValues<TValues>;
+  setFieldError: SetError<TValues>;
+  setFieldsErrors: SetErrors<TValues>;
+  setFieldTouched: SetFieldTouched<TValues>;
+  setFieldsTouched: SetTouched<TValues>;
+  focusField: (name: keyof TValues) => void;
+  registerInput: (fieldName: keyof TValues, options?: RegisterInputOptions) => RegisterInputResult;
+  registerCheckbox: (
+    fieldName: keyof TValues,
+    options?: RegisterCheckboxOptions
+  ) => RegisterCheckboxResult;
+  registerRadio: (fieldName: keyof TValues, options: RegisterRadioOptions) => RegisterRadioResult;
   values: FormValues<TValues>;
   errors: FormErrors<TValues>;
   touched: FormTouched<TValues>;
@@ -116,7 +65,7 @@ export type UseForm<TValues extends FormValues<any> = FormValues<any>> = {
   submitted: boolean;
 };
 
-export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
+export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
   input,
   validation,
 }: UseFormConfig<TValues>): UseForm<TValues> => {
@@ -137,45 +86,15 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     initialValues,
     store,
   });
-  // const debounceFns = useDebouncedValidation<TValues>(validation, store as any);
 
-  const validateField = (name: keyof TValues, value: any) => {
-    const formValues = { [name]: value } as TValues;
-    const { errors } = schema?.(formValues) ?? {};
-    return errors?.[name];
-  };
-
-  // this only seems to work if the user is updating a single field at a time
-  // it completely bombs when using form auto-completion (validation with errors are cancelled if multiple fields set simultaneously)
-  // const handleChangeValidateField = (fieldName: keyof TValues, value: string) => {
-  //   const error = validateField(fieldName, value);
-  //
-  //   const validationInFn = debounceFns.current?.[fieldName].in;
-  //   const validationOutFn = debounceFns.current?.[fieldName].out;
-  //
-  //   if (error) {
-  //     validationInFn?.(fieldName, error);
-  //     if (validationOutFn && 'cancel' in validationOutFn) {
-  //       validationOutFn?.cancel();
-  //     }
-  //   }
-  //
-  //   if (!error) {
-  //     state.errors[fieldName as keyof typeof state.errors] &&
-  //       validationOutFn?.(fieldName, undefined);
-  //     if (validationInFn && 'cancel' in validationInFn) {
-  //       validationInFn?.cancel();
-  //     }
-  //   }
-  // };
-
-  // const handleValidateForm = useCallback(
-  //   (values: TValues) => {
-  //     if (!validation) return true;
-  //     return schema?.(values)?.errors ?? {};
-  //   },
-  //   [schema, validation]
-  // );
+  const validateField = useCallback(
+    (name: keyof TValues, value: any): string | undefined => {
+      const formValues = { [name]: value } as TValues;
+      const { errors } = schema?.(formValues) ?? {};
+      return errors?.[name];
+    },
+    [schema]
+  );
 
   const validateForm = useCallback(
     (values: TValues): { valid: boolean; errors: Partial<Record<keyof TValues, string>> } => {
@@ -186,49 +105,62 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     [schema, validation]
   );
 
-  // const valid = useMemo(() => {
-  //   return !handleValidateForm(state.values);
-  // }, [handleValidateForm, state.values]);
-
   /* --------------Form handlers-------------- */
   const onReset = useEventCallback(() => {
     store.setState({ ...initialState, values: initialValues }).emit();
+    if (!isControlled) {
+      const refs = Object.entries(fieldRefs.current) as [keyof TValues, HTMLInputElement][];
+      for (const [key, input] of refs) {
+        if (Array.isArray(input)) {
+          for (const node of input) {
+            if (node.checked) node.checked = initialValues[key];
+          }
+        } else if (input.type === 'checkbox') {
+          input.checked = initialValues[key];
+        } else {
+          input.value = initialValues[key];
+        }
+      }
+    }
   });
 
   const onSubmit = useEventCallback((handler: (formValues: TValues) => void) => (e: FormEvent) => {
     e.preventDefault();
 
-    const getFormValues = () => {
-      if (isControlled) return state.values;
+    const values = store.getSnapshot().values;
+    let shouldEmit = false;
 
-      const values = {} as { [key in keyof TValues]: any };
-      const refs = Object.entries(fieldRefs.current) as [keyof TValues, HTMLInputElement][];
-      for (const [key, input] of refs) {
-        if (Array.isArray(input)) {
-          for (const node of input) {
-            if (node.checked) values[key] = node.value;
-          }
-        } else {
-          values[key] = input.type === 'checkbox' ? input.checked : input.value;
-        }
-      }
-      return values;
-    };
+    const touched = (Object.keys(values) as (keyof TValues)[]).reduce((acc, curr) => {
+      const hasValue = values[curr] !== '' && values[curr] !== undefined;
+      if (hasValue && !state.touched[curr]) acc[curr] = true;
+      return acc;
+    }, {} as FormState<TValues>['touched']);
 
-    const values = getFormValues();
+    if (Object.keys(touched).length) {
+      store.setState((ps) => ({
+        ...ps,
+        touched: { ...ps.touched, ...touched },
+      }));
+      shouldEmit = true;
+    }
 
     if (validationType === 'submit' && schema) {
       const { errors } = schema(values);
-      store
-        .setState((ps) => ({
-          ...ps,
-          errors,
-          submitted: true,
-        }))
-        .emit();
-      if (Object.keys(errors).length) return;
+      shouldEmit = true;
+
+      store.setState((ps) => ({
+        ...ps,
+        errors,
+        submitted: true,
+      }));
+
+      if (Object.keys(errors).length) {
+        shouldEmit && store.emit();
+        return;
+      }
     }
 
+    if (shouldEmit) store.emit();
     handler(values);
   });
 
@@ -246,7 +178,7 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     }));
 
     const { valid, errors } = validateForm(currentValues);
-    if (valid !== state.valid) {
+    if (valid !== store.getSnapshot().valid) {
       store.setState((ps) => ({
         ...ps,
         valid,
@@ -254,13 +186,7 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
       shouldEmit = true;
     }
 
-    const shouldDebounce =
-      validation && validation.type === 'change'
-        ? typeof validation.debounce === 'number'
-          ? !!validation.debounce
-          : validation.debounce?.in || validation.debounce?.out
-        : false;
-
+    const shouldDebounce = shouldDebounceValidation(validation);
     if (validationType === 'change' && !shouldDebounce && errors[name] !== state.errors[name]) {
       store.setState((ps) => ({
         ...ps,
@@ -270,19 +196,17 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     }
 
     if (shouldEmit) store.emit();
-
-    if (shouldDebounce) {
-      handleFieldValidation(name, value);
-    }
+    if (shouldDebounce) handleFieldValidation(name, value);
   });
 
   const onBlur: FocusEventHandler<HTMLInputElement> = useEventCallback((e) => {
     const { name } = e.target;
     let shouldEmit = false;
+    const { touched, errors } = store.getSnapshot();
 
     // if the field has not been touched, update the store touch state field value
     // and prep for publishing
-    if (!state.touched[name]) {
+    if (!touched[name]) {
       store.setState((ps) => ({
         ...ps,
         touched: { ...ps.touched, [name]: true },
@@ -294,13 +218,10 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     // then prep for publishing
     if (validationType === 'blur') {
       const error = validateField(name, e.target.value);
-      if (error !== state.errors[name]) {
+      if (error !== errors[name]) {
         store.setState((ps) => ({
           ...ps,
-          errors: {
-            ...ps.errors,
-            [name as keyof TValues]: error,
-          },
+          errors: { ...ps.errors, [name as keyof TValues]: error },
         }));
         shouldEmit = true;
       }
@@ -310,18 +231,139 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     if (shouldEmit) store.emit();
   });
 
-  const registerInput: RegisterField<TValues> = (fieldName, options) => {
+  /* form utils */
+  const resetValues = useCallback(() => {
+    store.setState((ps) => ({ ...ps, values: initialValues })).emit();
+
+    if (!isControlled) {
+      for (const key in initialValues) {
+        updateUncontrolledField(fieldRefs.current, key, initialValues[key]);
+      }
+    }
+  }, [initialValues, isControlled, store]);
+
+  const resetErrors = useCallback(() => {
+    store.setState((ps) => ({ ...ps, errors: {} })).emit();
+  }, [store]);
+
+  const resetTouched = useCallback(() => {
+    store.setState((ps) => ({ ...ps, touched: {} })).emit();
+  }, [store]);
+
+  const setFieldValue: SetValue<TValues, keyof TValues> = useCallback(
+    (name, value, shouldValidate = true) => {
+      if (!isControlled) {
+        updateUncontrolledField(fieldRefs.current, name, value);
+      }
+
+      store.setState((ps) => ({
+        ...ps,
+        values: { ...ps.values, [name]: value },
+        touched: { ...ps.touched, [name]: true },
+      }));
+
+      if (validation && shouldValidate) {
+        const error = validateField(name, value);
+        store.setState((ps) => ({
+          ...ps,
+          errors: { ...ps.errors, [name]: error },
+        }));
+      }
+
+      store.emit();
+    },
+    [isControlled, store, validateField, validation]
+  );
+
+  const setFieldsValues: SetValues<TValues> = useCallback(
+    (values, shouldValidation = true) => {
+      if (!isControlled) {
+        for (const key in values) {
+          updateUncontrolledField(fieldRefs.current, key, values[key]);
+        }
+      }
+
+      const touched = Object.keys(values).reduce((acc, curr) => {
+        acc[curr as keyof TValues] = true;
+        return acc;
+      }, {} as FormState<TValues>['touched']);
+
+      store.setState((ps) => ({
+        ...ps,
+        values: { ...ps.values, ...values },
+        touched: { ...ps.touched, ...touched },
+      }));
+
+      if (shouldValidation && validation) {
+        const { errors: validationErrors } = validation.schema(values as TValues);
+        const errorKeys = Object.keys(validationErrors);
+        const fieldNames = Object.keys(values);
+        const errors = fieldNames.reduce((acc, curr) => {
+          if (errorKeys.find((key) => fieldNames.includes(key))) {
+            acc[curr as keyof TValues] = validationErrors[curr] as string;
+          }
+          return acc;
+        }, {} as Record<keyof TValues, string>);
+
+        store.setState((ps) => ({
+          ...ps,
+          errors: { ...ps.errors, ...errors },
+        }));
+      }
+
+      store.emit();
+    },
+    [isControlled, store, validation]
+  );
+
+  const setFieldError: SetError<TValues> = useCallback(
+    (name, value) => {
+      store.setState((ps) => ({ ...ps, errors: { ...ps.errors, [name]: value } })).emit();
+    },
+    [store]
+  );
+
+  const setFieldsErrors: SetErrors<TValues> = useCallback(
+    (errors) => {
+      store.setState((ps) => ({ ...ps, errors: { ...ps.errors, ...errors } })).emit();
+    },
+    [store]
+  );
+
+  const setFieldTouched: SetFieldTouched<TValues> = useCallback(
+    (name, value = true) => {
+      store.setState((ps) => ({ ...ps, touched: { ...ps.touched, [name]: value } })).emit();
+    },
+    [store]
+  );
+
+  const setFieldsTouched: SetTouched<TValues> = useCallback(
+    (touched) => {
+      store.setState((ps) => ({ ...ps, touched: { ...ps.touched, ...touched } })).emit();
+    },
+    [store]
+  );
+
+  const focusField = (name: keyof TValues) => {
+    fieldRefs.current[name].focus();
+  };
+
+  /* form field registration functions */
+  const registerInput = (
+    fieldName: keyof TValues,
+    options?: RegisterInputOptions
+  ): RegisterInputResult => {
     const ref = (node: HTMLInputElement | HTMLSelectElement) => {
       if (node && !fieldRefs.current[fieldName]) {
         fieldRefs.current[fieldName] = node;
-        node.value = state.values[fieldName];
+        node.value = store.getSnapshot().values[fieldName];
       }
     };
 
     const valueAttribute = isControlled ? 'value' : 'defaultValue';
     return {
       name: fieldName as string,
-      [valueAttribute]: state.values[fieldName] ?? '',
+      [valueAttribute]: store.getSnapshot().values[fieldName] ?? '',
       ref,
       onChange,
       onBlur,
@@ -329,18 +371,21 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     };
   };
 
-  const registerCheckbox: RegisterField<TValues> = (fieldName, options) => {
+  const registerCheckbox = (
+    fieldName: keyof TValues,
+    options?: RegisterCheckboxOptions
+  ): RegisterCheckboxResult => {
     const ref = (node: HTMLInputElement) => {
       if (node && !fieldRefs.current[fieldName]) {
         fieldRefs.current[fieldName] = node;
-        node.checked = state.values[fieldName];
+        node.checked = store.getSnapshot().values[fieldName];
       }
     };
 
     const valueAttribute = isControlled ? 'checked' : 'defaultChecked';
     return {
       name: fieldName as string,
-      [valueAttribute]: state.values[fieldName],
+      [valueAttribute]: store.getSnapshot().values[fieldName],
       ref,
       onChange,
       onBlur,
@@ -348,21 +393,24 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     };
   };
 
-  const registerRadio: RegisterRadioField<TValues> = (fieldName, options) => {
+  const registerRadio = (
+    fieldName: keyof TValues,
+    options: RegisterRadioOptions
+  ): RegisterRadioResult => {
     const ref = (node: HTMLInputElement) => {
       if (node) {
         if (fieldRefs.current?.[fieldName]?.find((n: any) => n === node)) return;
         fieldRefs.current[fieldName] = !fieldRefs.current[fieldName]
           ? [node]
           : [...fieldRefs.current[fieldName], node];
-        node.checked = state.values[fieldName] === node.value;
+        node.checked = store.getSnapshot().values[fieldName] === node.value;
       }
     };
 
     const valueAttribute = isControlled ? 'checked' : 'defaultChecked';
     return {
       name: fieldName as string,
-      [valueAttribute]: state.values[fieldName] === options.value,
+      [valueAttribute]: store.getSnapshot().values[fieldName] === options.value,
       ref,
       onChange,
       onBlur,
@@ -372,7 +420,7 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
 
   // validate any form field populated with a value by default on initial render
   useEffect(() => {
-    const { valid } = validateForm(state.values);
+    const { valid } = validateForm(initialValues);
     if (!valid) {
       store.setState((ps) => ({ ...ps, valid })).emit();
     }
@@ -383,6 +431,16 @@ export const useForm2 = <TValues extends FormValues<any> = FormValues<any>>({
     ...state,
     onSubmit,
     onReset,
+    resetValues,
+    resetErrors,
+    resetTouched,
+    setFieldValue,
+    setFieldsValues,
+    setFieldError,
+    setFieldsErrors,
+    setFieldTouched,
+    setFieldsTouched,
+    focusField,
     registerInput,
     registerCheckbox,
     registerRadio,

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { SelectField } from '../SelectField';
 import { FormField } from '../FormField';
 import { TextField } from '../TextField';
-import { UseForm } from '../../form-hook';
+import { Button } from '../Button';
+import { UseForm } from '../../form-hook/useForm2';
 import { FormControlValues } from './useFormControls';
-import { Button } from "../Button";
 
 const validationTypes = ['change', 'blur', 'submit'] as const;
+const inputTypes = ['controlled', 'uncontrolled'] as const;
 
 type FormControlsProps = {
   handleSubmit: (values: any) => void;
@@ -14,11 +15,17 @@ type FormControlsProps = {
 
 export const FormControls: React.FC<UseForm<FormControlValues> & FormControlsProps> = ({
   values,
-  registerField,
+  registerInput,
+  registerCheckbox,
   onSubmit,
   handleSubmit,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
+
+  const submit = (formValues: any) => {
+    handleSubmit(formValues);
+    setDrawerVisible(false);
+  };
 
   return (
     <>
@@ -30,12 +37,19 @@ export const FormControls: React.FC<UseForm<FormControlValues> & FormControlsPro
         <button className="drawer-close" onClick={() => setDrawerVisible(false)}>
           X
         </button>
-        <form onSubmit={onSubmit(handleSubmit)}>
+        <form onSubmit={onSubmit(submit)}>
+          <SelectField
+            style={{ paddingBottom: 15, marginTop: 15 }}
+            label="Input type"
+            options={inputTypes.map((type) => ({ value: type, name: type }))}
+            {...registerInput('inputType', { id: 'inputType' })}
+          />
+
           <SelectField
             style={{ paddingBottom: 15, marginTop: 15 }}
             label="Validation type"
             options={validationTypes.map((type) => ({ value: type, name: type }))}
-            {...registerField('validationType', { id: 'validationType' })}
+            {...registerInput('validationType', { id: 'validationType' })}
           />
 
           {values.validationType === 'change' && (
@@ -43,19 +57,18 @@ export const FormControls: React.FC<UseForm<FormControlValues> & FormControlsPro
               <FormField id="debounce" label="Debounce" style={{ paddingBottom: '1rem' }}>
                 <input
                   style={{ width: 'fit-content' }}
-                  checked={values.debounce}
-                  {...registerField('debounce', { type: 'checkbox' })}
+                  {...registerCheckbox('debounce', { type: 'checkbox' })}
                 />
               </FormField>
               {values.debounce && (
                 <>
                   <TextField
                     label="Debounce in"
-                    {...registerField('debounceIn', { id: 'debounce-in', type: 'number' })}
+                    {...registerInput('debounceIn', { id: 'debounce-in', type: 'number' })}
                   />
                   <TextField
                     label="Debounce out"
-                    {...registerField('debounceOut', { id: 'debounce-out', type: 'number' })}
+                    {...registerInput('debounceOut', { id: 'debounce-out', type: 'number' })}
                   />
                 </>
               )}

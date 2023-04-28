@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react';
-import { debounce, getDebounceTimers } from '../utils';
+import { useCallback, useEffect, useRef } from 'react';
+import { debounce, getDebounceTimers, isEqualObj, shouldDebounceValidation } from '../utils';
 import { createStore } from '../store';
 import {
   BaseValidation,
@@ -110,14 +110,32 @@ export const useFieldValidation = <TValues extends FormValues<any>>({
   initialValues,
   store,
 }: UseFieldValidationArgs<TValues>) => {
+  const isMounted = useRef(false);
   const formValidation = validation ?? ({} as Validation<TValues>);
   const { schema: validationSchema } = formValidation;
+  const validationObjRef = useRef(validation);
   const debounceTimers = getDebounceTimers((formValidation as ChangeValidation<TValues>).debounce);
-  // TODO: need to handle schema updates
-  // const schemaRef = useRef(validationSchema);
   const debounceFns = useRef<DebounceState<TValues> | undefined>(
     getInitialDebounceState<TValues>(debounceTimers, initialValues, validationSchema)
   );
+
+  useEffect(() => {
+    const shouldDebounce = shouldDebounceValidation(validation);
+    if (validation?.type === 'change' && shouldDebounce && isMounted.current) {
+      const validationObj = validationObjRef.current as ChangeValidation<TValues>;
+      const persistedTimers = getDebounceTimers(validationObj.debounce);
+      if (!isEqualObj(debounceTimers, persistedTimers)) {
+        console.log('made it', { debounceTimers, persisted: persistedTimers });
+        validationObj.debounce = debounceTimers;
+        debounceFns.current = getInitialDebounceState(
+          debounceTimers,
+          initialValues,
+          validationSchema
+        );
+      }
+    }
+    isMounted.current = true;
+  }, [debounceTimers, initialValues, validation, validationSchema]);
 
   return useCallback(
     (name: string, value: any) => {
