@@ -5,7 +5,6 @@ import { yupValidator } from '@react-form-ally/yup-validator';
 import { TextField } from '../../components/TextField';
 import { Button } from '../../components/Button';
 import { FormControls, useFormControls } from '../../components/FormControls';
-import { z } from 'zod';
 
 const POBoxRegex = /\bP(ost|ostal)?([ \.]*(O|0)(ffice)?)?([ \.]*Box)\b/i;
 const allowedNames = ['Jack', 'Jay', 'Jim', 'Jarod', 'Jason'];
