@@ -26,7 +26,7 @@ const schema = z.object({
   password: z
     .string()
     .min(1, 'password is required')
-    .regex(/123123/, 'password has to match 123123'),
+    .regex(/\b123123\b/, 'password has to match 123123'),
 });
 
 const initialValues = {
