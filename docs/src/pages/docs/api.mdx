@@ -7,8 +7,15 @@ is an optional object containing validation rules for the form fields.
 
 **Parameters:**
 
-`initialValues`<br/>
-An object containing the initial values of the form fields
+`input`<br/>
+An object containing the initial values of the form fields as well as the input type.
+
+* `type`<br/>
+The type field of the input object describes the form input strategy. The 2 options are: `controlled` and `uncontrolled`.
+It defaults to `uncontrolled` for optimal performance.
+
+* `initialValues`<br/>
+The `initialValues` property is required. This represents the default values for the form upon initialization.
 
 `validation`<br/>
 An optional object containing validation rules for the form fields. It has several fields and some of which are
@@ -30,38 +37,49 @@ out of the form field's validation.
 
 **Types:**
 ```ts
-export type Debounce =
+// input
+type FormValues<TValues extends { [key: string]: any }> = {
+  [K in keyof TValues]: TValues[K];
+};
+
+type FormInput<TValues extends FormValues<any>> = {
+  initialValues: TValues;
+  type?: 'controlled' | 'uncontrolled';
+};
+
+// validation
+type Debounce =
   | number
   | {
       in: number;
       out: number;
     };
 
-export type BaseValidation<TValues extends FormValues<any>> = {
+type BaseValidation<TValues extends FormValues<any>> = {
   schema: (values: TValues) => ValidatorResult<TValues>;
 };
 
-export type ChangeValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
+type ChangeValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
   type?: 'change';
   debounce?: Debounce;
 };
 
-export type BlurValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
+type BlurValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
   type?: 'blur';
 };
 
-export type SubmitValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
+type SubmitValidation<TValues extends FormValues<any>> = BaseValidation<TValues> & {
   type?: 'submit';
 };
 
-export type Validation<TValues extends FormValues<any>> =
+type Validation<TValues extends FormValues<any>> =
   | ChangeValidation<TValues>
   | BlurValidation<TValues>
   | SubmitValidation<TValues>;
 ```
 
 **Usage:**
-```ts /initialValues/ /validation/
+```ts /input/ /validation/
 import { useForm } from '@react-form-ally/hook';
 
 type FormValues = {
@@ -70,11 +88,15 @@ type FormValues = {
 };
 
 const form = useForm<FormValues>({
-  initialValues: {
-    email: '',
-    password: '',
+  input: {
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    type: 'uncontrolled', // defaults to uncontrolled and can be omitted
   },
   validation: {
+    type: 'change', // defaults to change and can be omitted
     debounce: {
       in: 500,
       out: 0,
@@ -90,10 +112,10 @@ const form = useForm<FormValues>({
 });
 ```
 
-## registerField
-The `registerField` function is a utility function for registering form fields and their properties in a
-type-safe manner. It takes in two arguments - `fieldName` and `options` - and returns a
-`RegisterFieldResult`.
+## registerInput
+The `registerInput` function is a utility function for registering form fields and their properties in a
+type-safe manner. This should be used to register all input types besides either `checkbox` or `radio`. It takes
+in two arguments - `fieldName` and `options` - and returns a `RegisterInputResult`.
 
 * `fieldName`<br/>
 Represents the name attribute of the form field. It is a union type of all the keys in the generic object passed
@@ -101,11 +123,11 @@ to `useForm`.
 
 * `options` (optional)<br/>
 An optional object that can have any of the following properties: `id`, `required`, `disabled`, `max`, `maxLength`,
-`min`, `minLength`, `pattern`, `placeholder`, and `readOnly`. Each of these properties represent supported HTML
+`min`, `minLength`, `pattern`, `placeholder`, `readOnly`, and `type`. Each of these properties represent supported HTML
 form field attributes and are simply spread onto the registered field.
 
-The `RegisterFieldResult` by default will add the following four properties to a form field: `name`, `onChange`,
-`onBlur`, and `value`.
+The `RegisterInputResult` by default will add the following four properties to a form field: `name`, `onChange`,
+`onBlur`, and `value` or `defaultValue` (depends on input strategy type being either `controlled` or `uncontrolled`).
 
 * `name`<br/>
 Represents the name of the field.
@@ -116,45 +138,217 @@ A `ChangeEventHandler<any>` function that is called when the field value changes
 * `onBlur`<br/>
 A `FocusEventHandler<any>` function that is called when the field loses focus.
 
-* `value`<br/>
-A string or a number that represents the current value of the field.
+* `value` | `defaultValue` <br/>
+A string or a number that represents the current or default value of the field.
+
+* `ref` <br/>
+The ref property which is used to store a reference to the input element in the DOM.
 
 **Types:**
 ```ts
-export type RegisterFieldOptions = {
+type RegisterFieldOptions = {
   id?: string;
   required?: boolean;
   disabled?: boolean;
+};
+
+type RegisterInputOptions = RegisterFieldOptions & {
   max?: number | string;
   maxLength?: number;
   min?: number | string;
   minLength?: number;
-  pattern?: RegExp;
+  pattern?: string;
   placeholder?: string;
   readOnly?: boolean;
+  type?: 'text' | 'email' | 'number' | 'password' | 'tel' | 'url';
 };
 
-export type RegisterFieldResult = RegisterFieldOptions & {
+type RegisterFieldResult = RegisterFieldOptions & {
   name: string;
+  ref: (node: HTMLInputElement) => void;
   onChange: ChangeEventHandler<any>;
   onBlur: FocusEventHandler<any>;
-  value: string | number;
 };
 
-export type RegisterField<TValues extends FormValues<any>> = (
-  fieldName: keyof TValues,
-  options?: RegisterFieldOptions
-) => RegisterFieldResult;
+type RegisterInputResult = RegisterFieldResult &
+  RegisterInputOptions & {
+    value?: string | number;
+    defaultValue?: string | number;
+  };
 ```
 
-```tsx /registerField/
-const { registerField } = useForm({
+```tsx /registerInput/
+const { registerInput } = useForm({
  // ...
 });
 
 return (
   <form>
-    <input type="email" {...registerField('email', { id: 'email', required: true })} />
+    <input {...registerInput('email', { id: 'email', required: true, type: 'email' })} />
+    {/* ... */}
+  </form>
+);
+```
+
+## registerCheckbox
+The `registerCheckbox` function is a utility function for registering checkbox form fields and their properties in a
+type-safe manner. It takes in two arguments - `fieldName` and `options` - and returns a `RegisterCheckboxResult`.
+
+* `fieldName`<br/>
+Represents the name attribute of the form field. It is a union type of all the keys in the generic object passed
+to `useForm`.
+
+* `options` (optional)<br/>
+An optional object that can have any of the following properties: `id`, `required`, `disabled`, `type`, and `value`.
+Each of these properties represent supported HTML checkbox input element attributes and are simply spread onto the
+registered checkbox.
+
+The `RegisterCheckboxResult` by default will add the following four properties to a form field: `name`, `onChange`,
+`onBlur`, and `checked` or `defaultChecked` (depends on input strategy type being either `controlled` or `uncontrolled`).
+
+* `name`<br/>
+Represents the name of the field.
+
+* `onChange`<br/>
+A `ChangeEventHandler<any>` function that is called when the field value changes.
+
+* `onBlur`<br/>
+A `FocusEventHandler<any>` function that is called when the field loses focus.
+
+* `checked` | `defaultChecked` <br/>
+A string or a number that represents the current or default checked value of the field.
+
+* `ref` <br/>
+The ref property which is used to store a reference to the input element in the DOM.
+
+**Types:**
+```ts
+type RegisterFieldOptions = {
+  id?: string;
+  required?: boolean;
+  disabled?: boolean;
+};
+
+type RegisterCheckboxOptions = RegisterFieldOptions & {
+  type?: 'checkbox';
+  value?: string;
+};
+
+type RegisterFieldResult = RegisterFieldOptions & {
+  name: string;
+  ref: (node: HTMLInputElement) => void;
+  onChange: ChangeEventHandler<any>;
+  onBlur: FocusEventHandler<any>;
+};
+
+type RegisterCheckboxResult = RegisterFieldResult &
+  RegisterCheckboxOptions & {
+    checked?: boolean;
+    defaultChecked?: boolean;
+  };
+```
+
+```tsx /registerCheckbox/
+const { registerCheckbox } = useForm({
+ // ...
+});
+
+return (
+  <form>
+    <label htmlFor="save-profile">
+      <input {...registerCheckbox('saveProfile', { type: 'checkbox', id: 'save-profile' })} />
+      Save profile?
+    </label>
+    {/* ... */}
+  </form>
+);
+```
+
+## registerRadio
+The `registerRadio` function is a utility function for registering radio form fields and their properties in a
+type-safe manner. It takes in two arguments - `fieldName` and `options` - and returns a `RegisterCheckboxResult`.
+
+* `fieldName`<br/>
+Represents the name attribute of the form field. It is a union type of all the keys in the generic object passed
+to `useForm`.
+
+* `options` (`value` option is required for radio inputs)<br/>
+An optional object that can have any of the following properties: `id`, `required`, `disabled`, `type`, and `value`.
+Each of these properties represent supported HTML radio input element attributes and are simply spread onto the
+registered radio.
+
+The `RegisterRadioResult` by default will add the following four properties to a form field: `name`, `onChange`,
+`onBlur`, and `checked` or `defaultChecked` (depends on input strategy type being either `controlled` or `uncontrolled`).
+
+* `name`<br/>
+Represents the name of the field.
+
+* `onChange`<br/>
+A `ChangeEventHandler<any>` function that is called when the field value changes.
+
+* `onBlur`<br/>
+A `FocusEventHandler<any>` function that is called when the field loses focus.
+
+* `checked` | `defaultChecked` <br/>
+A string or a number that represents the current or default checked value of the field.
+
+* `ref` <br/>
+The ref property which is used to store a reference to the input element in the DOM.
+
+**Types:**
+```ts
+type RegisterFieldOptions = {
+  id?: string;
+  required?: boolean;
+  disabled?: boolean;
+};
+
+type RegisterRadioOptions = RegisterFieldOptions & {
+  type?: 'radio';
+  value: string;
+};
+
+type RegisterFieldResult = RegisterFieldOptions & {
+  name: string;
+  ref: (node: HTMLInputElement) => void;
+  onChange: ChangeEventHandler<any>;
+  onBlur: FocusEventHandler<any>;
+};
+
+type RegisterRadioResult = RegisterFieldResult &
+  RegisterRadioOptions & {
+    checked?: boolean;
+    defaultChecked?: boolean;
+  };
+```
+
+```tsx /registerRadio/
+const { registerRadio } = useForm({
+ // ...
+});
+
+return (
+  <form>
+    <label htmlFor="radio-pizza">
+      <input
+        {...registerRadio('favoriteFood', {
+          value: 'pizza',
+          type: 'radio',
+          id: 'radio-pizza',
+        })}
+      />
+      Pizza
+    </label>
+    <label htmlFor="radio-french-fries">
+      <input
+        {...registerRadio('favoriteFood', {
+          value: 'frenchFries',
+          type: 'radio',
+          id: 'radio-french-fries',
+        })}
+      />
+      French Fries
+    </label>
     {/* ... */}
   </form>
 );
@@ -166,7 +360,7 @@ when the form is submitted, and will receive the current values of the form fiel
 
 **Types:**
 ```ts
-export type Submit<TValues extends FormValues<any>> = (
+type Submit<TValues extends FormValues<any>> = (
   handler: (formValues: TValues) => void
 ) => (e: FormEvent) => void;
 ```
@@ -206,6 +400,32 @@ const { onReset } = useForm({
 
 return (
   <form onReset={onReset}>
+    {/* ... */}
+  </form>
+);
+```
+
+## focusField
+A helper function that can assist in focusing on any field registered within a given form.
+
+**Types:**
+```ts
+type FocusField = (name: keyof TValues) => void;
+```
+
+**Usage:**
+```tsx /focusField/
+const { registerInput, focusField } = useForm({
+ // ...
+});
+
+useEffect(() => {
+  focusField('name');
+}, []);
+
+return (
+  <form>
+    <input {...registerInput('name', { id: 'name', type: 'text' })} />
     {/* ... */}
   </form>
 );
@@ -316,7 +536,7 @@ field in a form.
 
 **Types:**
 ```ts
-export type SetValue<TValues extends FormValues<any>, K extends keyof TValues> = (
+type SetValue<TValues extends FormValues<any>, K extends keyof TValues> = (
   name: K,
   value: TValues[K],
   shouldValidate?: boolean
@@ -360,7 +580,7 @@ except it can be used to set the values of multiple form fields simultaneously.
 
 **Types:**
 ```ts
-export type SetValues<TValues extends FormValues<any>> = (
+type SetValues<TValues extends FormValues<any>> = (
   values: Partial<TValues>,
   shouldValidation?: boolean
 ) => void;
@@ -404,7 +624,7 @@ field in a form.
 
 **Types:**
 ```ts
-export type SetError<TValues extends FormValues<any>> = (
+type SetError<TValues extends FormValues<any>> = (
   name: keyof TValues,
   value: string
 ) => void;
@@ -445,7 +665,7 @@ except it can be used to set the errors of multiple form fields simultaneously.
 
 **Types:**
 ```ts
-export type SetErrors<TValues extends FormValues<any>> = (
+type SetErrors<TValues extends FormValues<any>> = (
   values: Partial<Record<keyof TValues, string>>
 ) => void;
 ```
@@ -488,7 +708,7 @@ field in a form.
 
 **Types:**
 ```ts
-export type SetFieldTouched<TValues extends FormValues<any>> = (
+type SetFieldTouched<TValues extends FormValues<any>> = (
   name: keyof TValues,
   value: boolean
 ) => void;
@@ -527,7 +747,7 @@ except it can be used to set the touched state of multiple form fields simultane
 
 **Types:**
 ```ts
-export type SetTouched<TValues extends FormValues<any>> = (values: {
+type SetTouched<TValues extends FormValues<any>> = (values: {
   [K in keyof TValues]: boolean;
 }) => void;
 ```
@@ -560,7 +780,7 @@ for the instance of `useForm`.
 
 **Types:**
 ```ts
-export type FormValues<TValues extends { [key: string]: any }> = {
+type FormValues<TValues extends { [key: string]: any }> = {
   [K in keyof TValues]: TValues[K];
 };
 ```
@@ -593,7 +813,7 @@ for that form field.
 
 **Types:**
 ```ts
-export type FormErrors<TValues extends FormValues<any>> = {
+type FormErrors<TValues extends FormValues<any>> = {
   [K in keyof TValues]?: string;
 };
 ```
@@ -626,7 +846,7 @@ form field has been touched.
 
 **Types:**
 ```ts
-export type FormTouched<TValues extends FormValues<any>> = {
+type FormTouched<TValues extends FormValues<any>> = {
   [K in keyof TValues]?: boolean;
 };
 ```

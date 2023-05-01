@@ -37,16 +37,19 @@ const initialValues: FormValues = {
 
 export const Login: React.FC = () => {
   const {
-    registerField,
+    registerInput,
     errors,
     touched,
     valid,
     onSubmit,
     onReset,
   } = useForm<FormValues>({
-    initialValues,
+    input: {
+      initialValues,
+      type: 'uncontrolled', // uncontrolled is the default input type
+    },
     validation: {
-      type: 'submit',
+      type: 'change', // change is the default validation type
       schema: (values) => {
         const errors = {};
 
@@ -73,10 +76,10 @@ export const Login: React.FC = () => {
 
   return (
     <form onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
-      <input type="email" {...registerField('email')} />
+      <input {...registerInput('email', { type: 'email' })} />
       {touched.email && errors.email && <div>{errors.email}</div>}
 
-      <input type="password" {...registerField('password')} />
+      <input {...registerInput('password', { type: 'password' })} />
       {touched.password && errors.password && <div>{errors.password}</div>}
 
       <button type="submit" disabled={!valid}>

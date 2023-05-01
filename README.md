@@ -5,10 +5,25 @@ Welcome and thanks for checking out `react-form-ally`, a React hook that simplif
 submission logic. It is highly customizable, and you can configure it to work with any form validation library or
 schema. It is also framework-agnostic, and you can use it with any frontend framework or library that supports React.
 
+Flexibility is the main ingredient in `react-form-ally`. The API allows developers to truly choose the exact strategy
+necessary for the requirements of building any given form. With user input, you can choose between `controlled` and
+`uncontrolled` strategies, allowing you to reduce the amount of rerendering that tracking input change might induce.
+
+Aside from providing a clear, concise, and granular ways to manage form input state, `react-form-ally` also provides
+a flexible way to handle form validation. Validation can be performed on `change`, `blur`, or `submit`, and the hook
+supports debouncing validation to reduce performance overhead. This means you can track errors on change if required,
+but ignore rerendering on every keypress. This can seriously improve the overall performance of the form which general
+equates to a better experience for your end users.
+
+The module itself provides some built it validation, but also ultimately supports a plugin style validation. This
+allows you to roll your own validation for your particular use case, or you can install one of the companion modules
+for using third-party validation libraries. Currently this includes both [Zod](https://zod.dev) and
+[Yup](https://github.com/jquense/yup).
+
 Overall, this hook helps reduce the amount of boilerplate code generally required for form management in a React
-applications, all while improving code quality and maintainability. And of course its also written in TypeScript,
-which means not only will you have gained the confidence of the additional type checking, you will also reap the
-kind of DX that one should expect from any TS library.
+applications, all while improving code quality, maintainability, and performance. And of course its also written in
+TypeScript, which means not only will you have gained the confidence of the additional type checking, you will also
+reap the kind of DX that one should expect from any TS library.
 
 **Full documentation [here](https://react-form-ally-docs.vercel.app/)**
 
@@ -46,16 +61,19 @@ const initialValues: FormValues = {
 
 export const Login: React.FC = () => {
   const {
-    registerField,
+    registerInput,
     errors,
     touched,
     valid,
     onSubmit,
     onReset,
   } = useForm<FormValues>({
-    initialValues,
+    input: {
+      initialValues,
+      type: 'uncontrolled', // uncontrolled is the default input type
+    },
     validation: {
-      type: 'submit',
+      type: 'change', // change is the default validation type
       schema: (values) => {
         const errors = {};
 
@@ -82,10 +100,10 @@ export const Login: React.FC = () => {
 
   return (
     <form onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
-      <input type="email" {...registerField('email')} />
+      <input {...registerInput('email', { type: 'email' })} />
       {touched.email && errors.email && <div>{errors.email}</div>}
 
-      <input type="password" {...registerField('password')} />
+      <input {...registerInput('password', { type: 'password' })} />
       {touched.password && errors.password && <div>{errors.password}</div>}
 
       <button type="submit" disabled={!valid}>
