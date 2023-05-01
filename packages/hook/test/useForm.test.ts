@@ -8,7 +8,11 @@ const initialValues: InitialValues = { foo: 'foo', bar: 'bar' };
 describe('useForm', () => {
   describe('initialValues', () => {
     it('should correctly set form values state from initial values provided', () => {
-      const { result } = renderHook(() => useForm<InitialValues>({ initialValues }));
+      const { result } = renderHook(() =>
+        useForm<InitialValues>({
+          input: { initialValues },
+        })
+      );
       expect(result.current.values).toEqual(initialValues);
     });
   });
@@ -17,7 +21,7 @@ describe('useForm', () => {
     it('should validate all form field values on render', () => {
       const { result } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues },
           validation: {
             schema: validator({
               foo: { isEmail: true },
@@ -32,7 +36,7 @@ describe('useForm', () => {
     it('should update valid value anytime a form value is changed', () => {
       const { result, rerender } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues },
           validation: {
             schema: validator({
               foo: { isEmail: true },
@@ -42,7 +46,7 @@ describe('useForm', () => {
       );
       expect(result.current.valid).toEqual(false);
 
-      const fieldValues = result.current.registerField('foo');
+      const fieldValues = result.current.registerInput('foo');
       const eventObj = {
         target: { name: 'foo', value: 'e@e.com' },
       } as ChangeEvent<any>;
@@ -58,46 +62,48 @@ describe('useForm', () => {
 
   describe('registerField', () => {
     it('should provide default fields when caller provides field name', () => {
-      const { result } = renderHook(() => useForm<InitialValues>({ initialValues }));
-      const { onBlur, onChange, value, name } = result.current.registerField('foo');
+      const { result } = renderHook(() => useForm<InitialValues>({ input: { initialValues } }));
+      const { onBlur, onChange, defaultValue, name } = result.current.registerInput('foo');
       expect(onBlur).toBeDefined();
       expect(onChange).toBeDefined();
-      expect(value).toEqual('foo');
+      expect(defaultValue).toEqual('foo');
       expect(name).toEqual('foo');
     });
 
     it('should provide optional fields when caller provides them', () => {
-      const { result } = renderHook(() => useForm<InitialValues>({ initialValues }));
+      const { result } = renderHook(() => useForm<InitialValues>({ input: { initialValues } }));
       const fieldOptions = {
         max: 10,
         min: 10,
         maxLength: 5,
         minLength: 5,
         disabled: true,
-        pattern: /[a-z][0-9]/,
         id: 'foo',
         placeholder: 'Foo',
         readOnly: true,
         required: true,
       };
-      const { onBlur, onChange, value, name, ...rest } = result.current.registerField(
+      const { onBlur, onChange, defaultValue, name, ref, ...rest } = result.current.registerInput(
         'foo',
         fieldOptions
       );
       expect(onBlur).toBeDefined();
       expect(onChange).toBeDefined();
-      expect(value).toEqual('foo');
+      expect(defaultValue).toEqual('foo');
       expect(name).toEqual('foo');
+      expect(ref).toBeDefined();
       expect(rest).toEqual(fieldOptions);
     });
   });
 
   describe('onChange', () => {
     it('should update form value state via onChange handler', () => {
-      const { result, rerender } = renderHook(() => useForm<InitialValues>({ initialValues }));
+      const { result, rerender } = renderHook(() =>
+        useForm<InitialValues>({ input: { initialValues } })
+      );
       expect(result.current.values).toEqual(initialValues);
 
-      const fieldValues = result.current.registerField('foo');
+      const fieldValues = result.current.registerInput('foo');
       const eventObj = {
         target: { name: 'foo', value: 'bar' },
       } as ChangeEvent<any>;
@@ -113,7 +119,7 @@ describe('useForm', () => {
     it('should update form value state and validate field via onChange handler if validation type is change', () => {
       const { result, rerender } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues },
           validation: {
             schema: validator({
               foo: { isEmail: true },
@@ -123,7 +129,7 @@ describe('useForm', () => {
       );
       expect(result.current.values).toEqual(initialValues);
 
-      const fieldValues = result.current.registerField('foo');
+      const fieldValues = result.current.registerInput('foo');
       const eventObj = {
         target: { name: 'foo', value: 'bar' },
       };
@@ -141,7 +147,7 @@ describe('useForm', () => {
     it('should update form value state and should not validate field via onChange handler if validation type is not change', () => {
       const { result, rerender } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues },
           validation: {
             type: 'blur',
             schema: validator({
@@ -152,7 +158,7 @@ describe('useForm', () => {
       );
       expect(result.current.values).toEqual(initialValues);
 
-      const fieldValues = result.current.registerField('foo');
+      const fieldValues = result.current.registerInput('foo');
       const eventObj = {
         target: { name: 'foo', value: 'bar' },
       };
@@ -170,10 +176,12 @@ describe('useForm', () => {
 
   describe('onBlur', () => {
     it('should set form field touched state if the onBlur handler is called', () => {
-      const { result, rerender } = renderHook(() => useForm<InitialValues>({ initialValues }));
+      const { result, rerender } = renderHook(() =>
+        useForm<InitialValues>({ input: { initialValues } })
+      );
       expect(result.current.values).toEqual(initialValues);
 
-      const fieldValues = result.current.registerField('foo');
+      const fieldValues = result.current.registerInput('foo');
       const eventObj = {
         target: { name: 'foo', value: 'bar' },
       } as FocusEvent<any>;
@@ -189,7 +197,7 @@ describe('useForm', () => {
     it('should update validate form field via onBlur handler if validation type is blur', () => {
       const { result, rerender } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues },
           validation: {
             type: 'blur',
             schema: validator({
@@ -200,7 +208,7 @@ describe('useForm', () => {
       );
       expect(result.current.values).toEqual(initialValues);
 
-      const fieldValues = result.current.registerField('foo');
+      const fieldValues = result.current.registerInput('foo');
       const eventObj = {
         target: { name: 'foo', value: 'bar' },
       } as FocusEvent<any>;
@@ -217,7 +225,9 @@ describe('useForm', () => {
 
   describe('onSubmit', () => {
     it('should call prevent default on the form submission event object and call provided submit handler', () => {
-      const { result, rerender } = renderHook(() => useForm<InitialValues>({ initialValues }));
+      const { result, rerender } = renderHook(() =>
+        useForm<InitialValues>({ input: { initialValues } })
+      );
       expect(result.current.values).toEqual(initialValues);
 
       const onSubmit = result.current.onSubmit;
@@ -236,7 +246,9 @@ describe('useForm', () => {
     });
 
     it('should update the submitted state to true when the onSubmit handler is called', () => {
-      const { result, rerender } = renderHook(() => useForm<InitialValues>({ initialValues }));
+      const { result, rerender } = renderHook(() =>
+        useForm<InitialValues>({ input: { initialValues } })
+      );
       expect(result.current.submitted).toEqual(false);
 
       const onSubmit = result.current.onSubmit;
@@ -256,7 +268,7 @@ describe('useForm', () => {
     it('should validate all form values if validation type is submit and submit handler is called', () => {
       const { result, rerender } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues },
           validation: {
             type: 'submit',
             schema: validator({
@@ -289,7 +301,7 @@ describe('useForm', () => {
     it('should reset all form state back to the initial state', () => {
       const { result, rerender } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues },
           validation: {
             schema: validator({
               foo: { isEmail: true },
@@ -300,7 +312,7 @@ describe('useForm', () => {
       );
       expect(result.current.values).toEqual(initialValues);
 
-      const fieldValues = result.current.registerField('foo');
+      const fieldValues = result.current.registerInput('foo');
       const changeEventObj = {
         target: { name: 'foo', value: 'bar' },
       } as ChangeEvent<any>;
@@ -341,7 +353,9 @@ describe('useForm', () => {
 
   describe('setValue and setValues', () => {
     it('should update form value state via setValue handler', () => {
-      const { result, rerender } = renderHook(() => useForm<InitialValues>({ initialValues }));
+      const { result, rerender } = renderHook(() =>
+        useForm<InitialValues>({ input: { initialValues, type: 'controlled' } })
+      );
       expect(result.current.values).toEqual(initialValues);
 
       act(() => {
@@ -355,7 +369,7 @@ describe('useForm', () => {
     it('should validate form value set using setValue handler by default', () => {
       const { result, rerender } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues, type: 'controlled' },
           validation: {
             schema: validator({ foo: { isEmail: true } }),
           },
@@ -374,7 +388,9 @@ describe('useForm', () => {
     });
 
     it('should update form value state via setValues handler', () => {
-      const { result, rerender } = renderHook(() => useForm<InitialValues>({ initialValues }));
+      const { result, rerender } = renderHook(() =>
+        useForm<InitialValues>({ input: { initialValues, type: 'controlled' } })
+      );
       expect(result.current.values).toEqual(initialValues);
 
       act(() => {
@@ -388,7 +404,7 @@ describe('useForm', () => {
     it('should validate form value set using setValues handler by default', () => {
       const { result, rerender } = renderHook(() =>
         useForm<InitialValues>({
-          initialValues,
+          input: { initialValues, type: 'controlled' },
           validation: {
             schema: validator({ foo: { isEmail: true }, bar: { isUrl: true } }),
           },

@@ -154,13 +154,20 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
       store.setState((ps) => ({
         ...ps,
         errors,
-        submitted: true,
       }));
 
       if (Object.keys(errors).length) {
         shouldEmit && store.emit();
         return;
       }
+    }
+
+    if (!store.getSnapshot().submitted) {
+      store.setState((ps) => ({
+        ...ps,
+        submitted: true,
+      }));
+      shouldEmit = true;
     }
 
     if (shouldEmit) store.emit();
