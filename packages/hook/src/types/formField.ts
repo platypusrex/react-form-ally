@@ -1,5 +1,4 @@
 import type { ChangeEventHandler, FocusEventHandler } from 'react';
-import { FormValues } from './common';
 
 export type RegisterFieldOptions = {
   id?: string;
@@ -52,8 +51,3 @@ export type RegisterRadioResult = RegisterFieldResult &
     checked?: boolean;
     defaultChecked?: boolean;
   };
-
-export type RegisterField<TValues extends FormValues<any>> = (
-  fieldName: keyof TValues,
-  options?: RegisterFieldOptions
-) => RegisterFieldResult;
