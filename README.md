@@ -1,4 +1,4 @@
-<img src="https://github.com/platypusrex/react-form-ally/blob/master/docs/public/default.svg" data-canonical-src="https://github.com/platypusrex/react-form-ally/blob/master/docs/public/default.svg" width="500" />
+<img src="./docs/public/default.svg" data-canonical-src="./docs/public/default.svg" width="500" />
 
 Welcome and thanks for checking out `react-form-ally`, a React hook that simplifies form handling in React applications.
 `react-form-ally` provides developers with a simple and easy-to-use API to manage form state, validation, and
