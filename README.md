@@ -1,5 +1,5 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/public/default-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./docs/public/default-dark.svg">
   <img src="./docs/public/default.svg" width="500" alt="react-form-ally logo">
 </picture>
 
