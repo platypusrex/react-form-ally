@@ -3,7 +3,7 @@ import { SelectField } from '../SelectField';
 import { FormField } from '../FormField';
 import { TextField } from '../TextField';
 import { Button } from '../Button';
-import { UseForm } from '../../form-hook/useForm2';
+import { UseForm } from '@react-form-ally/hook';
 import { FormControlValues } from './useFormControls';
 
 const validationTypes = ['change', 'blur', 'submit'] as const;
