@@ -5,6 +5,7 @@ import { shouldDebounceValidation, updateUncontrolledField } from './utils';
 import type {
   DefaultCallback,
   FormErrors,
+  FormInput,
   FormState,
   FormTouched,
   FormValues,
@@ -23,6 +24,7 @@ import type {
   Submit,
   Validation,
 } from './types';
+import { shouldWatchFieldOnChange } from "./utils/shouldWatchFieldOnChange";
 
 const initialState = {
   submitted: false,
@@ -33,10 +35,7 @@ const initialState = {
 
 export type UseFormConfig<TValues extends FormValues<any> = FormValues<any>> = {
   validation?: Validation<TValues>;
-  input: {
-    initialValues: TValues;
-    type?: 'controlled' | 'uncontrolled';
-  };
+  input: FormInput<TValues>;
 };
 
 export type UseForm<TValues extends FormValues<any> = FormValues<any>> = {
@@ -176,7 +175,7 @@ export const useForm = <TValues extends FormValues<any> = FormValues<any>>({
 
   const onChange: ChangeEventHandler<HTMLInputElement> = useEventCallback((e) => {
     const { name, value, checked, type } = e.target;
-    let shouldEmit = isControlled;
+    let shouldEmit = isControlled || shouldWatchFieldOnChange(input, name, value, store);
 
     let formValue: string | boolean = value;
     if (type === 'checkbox') formValue = checked;
