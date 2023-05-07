@@ -24,5 +24,15 @@ export const useFormControls = () =>
     input: {
       initialValues,
       type: 'uncontrolled',
+      watch: [
+        'debounce',
+        {
+          validationType: (value, prevValue) =>
+            !(
+              (value === 'blur' && prevValue === 'submit') ||
+              (value === 'submit' && prevValue === 'blur')
+            ),
+        },
+      ],
     },
   });
