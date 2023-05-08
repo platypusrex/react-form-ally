@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { ChangeEventHandler, FocusEventHandler, FormEvent } from 'react';
 import { useEventCallback, useFieldValidation, useFormState } from './hooks';
-import { shouldDebounceValidation, updateUncontrolledField } from './utils';
+import {
+  shouldDebounceValidation,
+  shouldWatchFieldOnChange,
+  updateUncontrolledField,
+} from './utils';
 import type {
   DefaultCallback,
   FormErrors,
@@ -24,7 +28,6 @@ import type {
   Submit,
   Validation,
 } from './types';
-import { shouldWatchFieldOnChange } from "./utils/shouldWatchFieldOnChange";
 
 const initialState = {
   submitted: false,
