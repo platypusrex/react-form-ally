@@ -6,5 +6,6 @@ export * from './getNameAndValueFromSyntheticEvent';
 export * from './getValidationType';
 export * from './isEqualObj';
 export * from './shouldDebounceValidation';
+export * from './shouldWatchFieldOnChange';
 export * from './updateUncontrolledField';
 export * from './validateDebouncedField';
