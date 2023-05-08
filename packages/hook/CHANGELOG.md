@@ -1,5 +1,14 @@
 # @react-form-ally/hook
 
+## 0.3.0
+
+### Minor Changes
+
+- 04a69db: The update introduces the `watch` API that can be utilized with the `uncontrolled` input
+  strategy. This change allows you to truly adopt a hybrid solution, defaulting all form input to
+  uncontrolled, yet allowing individual form fields to behave as controlled inputs. This will allow
+  your UI to respond to value changes with specific form fields.
+
 ## 0.2.0
 
 ### Minor Changes
