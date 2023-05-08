@@ -17,6 +17,11 @@ It defaults to `uncontrolled` for optimal performance.
 * `initialValues`<br/>
 The `initialValues` property is required. This represents the default values for the form upon initialization.
 
+* `watch`<br/>
+The watch field can only utilized if your using the `uncontrolled` input type strategy. This allows you to specify
+specific fields that you need to behave as though they are controlled fields and alert subscribers to all changes in
+the fields values. There are several options available when utilizing this API.
+
 `validation`<br/>
 An optional object containing validation rules for the form fields. It has several fields and some of which are
 optional.
@@ -42,10 +47,30 @@ type FormValues<TValues extends { [key: string]: any }> = {
   [K in keyof TValues]: TValues[K];
 };
 
-type FormInput<TValues extends FormValues<any>> = {
+type FormInputType = 'controlled' | 'uncontrolled';
+
+type BaseFormInput<TValues extends FormValues<any>> = {
   initialValues: TValues;
-  type?: 'controlled' | 'uncontrolled';
 };
+
+type ControlledFormInput<TValues extends FormValues<any>> = BaseFormInput<TValues> & {
+  type?: Extract<FormInputType, 'controlled'>;
+};
+
+type WatchConfig<TValues extends FormValues<any>, K extends keyof TValues> = {
+  [key in K]: (value: TValues[key], prevValue: TValues[key]) => boolean;
+};
+
+type UncontrolledFormInput<TValues extends FormValues<any>> = BaseFormInput<TValues> & {
+  type?: Extract<FormInputType, 'uncontrolled'>;
+  watch?:
+    | (keyof TValues | Partial<WatchConfig<TValues, keyof TValues>>)[]
+    | Partial<WatchConfig<TValues, keyof TValues>>;
+};
+
+type FormInput<TValues extends FormValues<any>> =
+  | ControlledFormInput<TValues>
+  | UncontrolledFormInput<TValues>;
 
 // validation
 type Debounce =
@@ -54,6 +79,12 @@ type Debounce =
       in: number;
       out: number;
     };
+
+type ValidatorResult<TValues extends FormValues<any>> = {
+  errors: {
+    [K in keyof TValues]?: string;
+  };
+};
 
 type BaseValidation<TValues extends FormValues<any>> = {
   schema: (values: TValues) => ValidatorResult<TValues>;
@@ -87,13 +118,14 @@ type FormValues = {
   password: string;
 };
 
+// Basic example
 const form = useForm<FormValues>({
   input: {
     initialValues: {
       email: '',
       password: '',
     },
-    type: 'uncontrolled', // defaults to uncontrolled and can be omitted
+    type: 'controlled', // defaults to uncontrolled and can be omitted
   },
   validation: {
     type: 'change', // defaults to change and can be omitted
@@ -109,6 +141,52 @@ const form = useForm<FormValues>({
       };
     }
   }
+});
+
+// Watch config example - array of field names
+const form = useForm<FormValues>({
+  input: {
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    type: 'uncontrolled',
+    watch: ['email'],
+  },
+  ...validationConfig
+});
+
+// Watch config example - object of field names with a value of (fieldValue, previousFieldValue) => boolean
+const form = useForm<FormValues>({
+  input: {
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    type: 'uncontrolled',
+    watch: {
+      email: (value, prevValue) => true,
+    },
+  },
+  ...validationConfig
+});
+
+// Watch config example - array of combined items in examples above
+const form = useForm<FormValues>({
+  input: {
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    type: 'uncontrolled',
+    watch: [
+      'email',
+      {
+        password: (value, prevValue) => value !== prevValue,
+      },
+    ],
+  },
+  ...validationConfig
 });
 ```
 
