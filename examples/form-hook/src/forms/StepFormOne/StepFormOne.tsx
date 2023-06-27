@@ -4,11 +4,12 @@ import { Button } from '../../components/Button';
 import { UserRegistrationForm, userRegistrationForm } from '../../sharedForms';
 
 export const StepFormOne: React.FC = () => {
-  const { registerInput, errors, onSubmit, onReset, valid, setFieldValue } = userRegistrationForm();
+  const { registerInput, errors, onSubmit, onReset, setFieldValue, values } =
+    userRegistrationForm();
 
   useEffect(() => {
-    setFieldValue('name', 'Frank');
-  }, []);
+    if (!values.name) setFieldValue('name', 'Frank');
+  }, [values]);
 
   const handleSubmit = (formValues: UserRegistrationForm) => {
     alert(JSON.stringify(formValues, null, 2));
@@ -44,7 +45,7 @@ export const StepFormOne: React.FC = () => {
             {...registerInput('password', { type: 'password', id: 'password' })}
           />
         </div>
-        <Button disabled={!valid} href="/step-form-two" style={{ marginBottom: 20 }}>
+        <Button href="/step-form-two" style={{ marginBottom: 20 }}>
           Next
         </Button>
       </form>

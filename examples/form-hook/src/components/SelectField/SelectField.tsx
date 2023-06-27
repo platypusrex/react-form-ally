@@ -26,7 +26,7 @@ export const SelectField = React.forwardRef<any, SelectFieldProps>(
         value={value}
         className={`select ${error ? 'error' : ''}`}
         name={name}
-        id="state-input"
+        id={id}
         onBlur={onBlur}
         onChange={onChange}
       >

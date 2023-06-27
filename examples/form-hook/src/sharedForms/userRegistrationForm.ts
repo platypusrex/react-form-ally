@@ -15,25 +15,27 @@ export const schema = z.object({
     ),
   website: z.string().url().optional().or(z.literal('')),
   street: z
-    .custom((val) => !POBoxRegex.test(val as string), 'No PO box allowed')
-    .optional()
-    .or(z.literal('')),
+    .string()
+    .min(1, 'street is required')
+    .refine((val) => !POBoxRegex.test(val as string), 'No PO box allowed'),
   email: z.string().min(1, 'email is required').email(),
   password: z
     .string()
     .min(1, 'password is required')
     .regex(/\b123123\b/, 'password has to match 123123'),
+  saveProfile: z.boolean(),
 });
 
-export const initialValues = {
+export type UserRegistrationForm = z.infer<typeof schema>;
+
+export const initialValues: UserRegistrationForm = {
   name: '',
   website: '',
   street: '',
   email: '',
   password: '',
+  saveProfile: false,
 };
-
-export type UserRegistrationForm = z.infer<typeof schema>;
 
 export const userRegistrationForm = createFormHook<UserRegistrationForm>({
   input: {
