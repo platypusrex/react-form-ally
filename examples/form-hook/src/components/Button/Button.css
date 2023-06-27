@@ -8,6 +8,14 @@
   transition: background 0.2s ease-in-out;
 }
 
+a.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  max-width: -webkit-fill-available;
+}
+
 .submit {
   background: cornflowerblue;
   color: #fff;

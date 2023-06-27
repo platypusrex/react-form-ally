@@ -1,0 +1,43 @@
+import React from 'react';
+import { TextField } from '../../components/TextField';
+import { Button } from '../../components/Button';
+import { UserRegistrationForm, userRegistrationForm } from '../../sharedForms';
+
+export const StepFormTwo: React.FC = () => {
+  const { registerInput, errors, onSubmit, onReset, valid, values } = userRegistrationForm();
+
+  const handleSubmit = (formValues: UserRegistrationForm) => {
+    alert(JSON.stringify(formValues, null, 2));
+  };
+
+  return (
+    <div className="form-page">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '2.2rem',
+        }}
+      >
+        <h1>Zod</h1>
+      </div>
+      <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
+        <TextField
+          label="website"
+          error={errors.website}
+          {...registerInput('website', { type: 'url', id: 'website' })}
+        />
+        <TextField
+          label="street"
+          error={errors.street}
+          {...registerInput('street', { type: 'text', id: 'street' })}
+        />
+        <Button disabled={!valid} style={{ marginBottom: 20 }}>
+          Submit
+        </Button>
+        <Button type="reset">Reset</Button>
+      </form>
+    </div>
+  );
+};
