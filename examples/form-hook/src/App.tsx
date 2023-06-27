@@ -5,6 +5,8 @@ import { DefaultValidator } from './forms/DefaultValidator';
 import { ZodValidator } from './forms/ZodValidator';
 import { YupValidator } from './forms/YupValidator';
 import { CheckboxAndRadio } from './forms/CheckboxAndRadio';
+import { StepFormOne } from './forms/StepFormOne';
+import { StepFormTwo } from './forms/StepFormTwo';
 import './App.css';
 
 const Layout: React.FC = () => (
@@ -25,6 +27,9 @@ const Layout: React.FC = () => (
       <NavLink className="link" to="checkbox-radio">
         Checkbox/Radio
       </NavLink>
+      <NavLink className="link" to="step-form-one">
+        Step Form
+      </NavLink>
     </div>
     <Outlet />
   </div>
@@ -39,6 +44,8 @@ export const App = () => {
         <Route path="zod" element={<ZodValidator />} />
         <Route path="yup" element={<YupValidator />} />
         <Route path="checkbox-radio" element={<CheckboxAndRadio />} />
+        <Route path="step-form-one" element={<StepFormOne />} />
+        <Route path="step-form-two" element={<StepFormTwo />} />
       </Route>
     </Routes>
   );

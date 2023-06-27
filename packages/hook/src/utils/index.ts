@@ -3,6 +3,7 @@ export * from './getDebounceTimers';
 export * from './getInitialDebounceState';
 export * from './getInputNameAndValue';
 export * from './getNameAndValueFromSyntheticEvent';
+export * from './getSharedFormState';
 export * from './getValidationType';
 export * from './isEqualObj';
 export * from './shouldDebounceValidation';

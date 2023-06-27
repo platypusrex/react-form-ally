@@ -1,24 +1,28 @@
-import { useRef, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 import { createStore } from '../store';
 import { FormValues } from '../types';
 
-type State<TFormState extends FormValues<any>> = {
-  values: TFormState;
-  errors: Partial<Record<keyof TFormState, string>>;
-  touched: Partial<Record<keyof TFormState, boolean>>;
+type State<TValues extends FormValues<any>> = {
+  values: TValues;
+  errors: Partial<Record<keyof TValues, string>>;
+  touched: Partial<Record<keyof TValues, boolean>>;
   submitted: boolean;
   valid: boolean;
 };
 
-export const useFormState = <TFormState extends FormValues<any>>(
-  initialState: State<TFormState>
-) => {
-  const store = useRef(createStore(initialState));
-  const state = useSyncExternalStore(
-    store.current.subscribe,
-    store.current.getSnapshot,
-    store.current.getSnapshot
-  );
+type UseFormState<TFormState extends FormValues<any>> = {
+  state: State<TFormState>;
+  store: ReturnType<typeof createStore>;
+};
 
-  return { state, store: store.current };
+export const useFormState = <TValues extends FormValues<any>>(
+  store: ReturnType<typeof createStore>
+): UseFormState<TValues> => {
+  const state = useSyncExternalStore<State<TValues>>(
+    store.subscribe,
+    // @ts-ignore
+    store.getSnapshot,
+    store.getSnapshot
+  );
+  return { state, store };
 };
