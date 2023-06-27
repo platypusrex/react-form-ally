@@ -331,9 +331,15 @@ export const _useFormInternal = <TValues extends FormValues<any> = FormValues<an
     options?: RegisterInputOptions
   ): RegisterInputResult => {
     const ref = (node: HTMLInputElement | HTMLSelectElement) => {
+      const value = store.getSnapshot().values[fieldName];
       if (node && !fieldRefs[fieldName]) {
         fieldRefs[fieldName] = node;
-        node.value = store.getSnapshot().values[fieldName];
+        node.value = value;
+      }
+
+      const nodeValue = node?.value || (node as HTMLInputElement)?.defaultValue;
+      if (node && nodeValue !== value) {
+        node.value = value;
       }
     };
 
@@ -353,9 +359,15 @@ export const _useFormInternal = <TValues extends FormValues<any> = FormValues<an
     options?: RegisterCheckboxOptions
   ): RegisterCheckboxResult => {
     const ref = (node: HTMLInputElement) => {
+      const value = store.getSnapshot().values[fieldName];
       if (node && !fieldRefs[fieldName]) {
         fieldRefs[fieldName] = node;
-        node.checked = store.getSnapshot().values[fieldName];
+        node.checked = value;
+      }
+
+      const nodeChecked = node?.checked ?? node?.defaultChecked;
+      if (node && nodeChecked !== value) {
+        node.value = value;
       }
     };
 
@@ -375,10 +387,17 @@ export const _useFormInternal = <TValues extends FormValues<any> = FormValues<an
     options: RegisterRadioOptions
   ): RegisterRadioResult => {
     const ref = (node: HTMLInputElement) => {
+      const fieldRef = fieldRefs?.[fieldName]?.find((n: Node) => n === node);
+      const value = store.getSnapshot().values[fieldName];
       if (node) {
-        if (fieldRefs?.[fieldName]?.find((n: any) => n === node)) return;
+        if (fieldRef) return;
         fieldRefs[fieldName] = !fieldRefs[fieldName] ? [node] : [...fieldRefs[fieldName], node];
-        node.checked = store.getSnapshot().values[fieldName] === node.value;
+        node.checked = value === node.value;
+      }
+
+      const nodeChecked = node?.checked ?? node?.defaultChecked;
+      if (node && nodeChecked !== (value === node?.value)) {
+        node.checked = value === node.value;
       }
     };
 
@@ -395,7 +414,7 @@ export const _useFormInternal = <TValues extends FormValues<any> = FormValues<an
 
   // validate any form field populated with a value by default on initial render
   useEffect(() => {
-    const { valid } = validateForm(initialValues);
+    const { valid } = validateForm(state.values);
     if (!valid) {
       store.setState((ps) => ({ ...ps, valid })).emit();
     }

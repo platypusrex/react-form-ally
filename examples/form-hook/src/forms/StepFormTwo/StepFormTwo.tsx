@@ -2,9 +2,11 @@ import React from 'react';
 import { TextField } from '../../components/TextField';
 import { Button } from '../../components/Button';
 import { UserRegistrationForm, userRegistrationForm } from '../../sharedForms';
+import styles from '../CheckboxAndRadio/style.module.css';
 
 export const StepFormTwo: React.FC = () => {
-  const { registerInput, errors, onSubmit, onReset, valid, values } = userRegistrationForm();
+  const { registerInput, registerCheckbox, errors, onSubmit, onReset, valid } =
+    userRegistrationForm();
 
   const handleSubmit = (formValues: UserRegistrationForm) => {
     alert(JSON.stringify(formValues, null, 2));
@@ -21,6 +23,9 @@ export const StepFormTwo: React.FC = () => {
         }}
       >
         <h1>Zod</h1>
+        <Button variant="link" href="/step-form-one">
+          Back
+        </Button>
       </div>
       <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
         <TextField
@@ -33,6 +38,12 @@ export const StepFormTwo: React.FC = () => {
           error={errors.street}
           {...registerInput('street', { type: 'text', id: 'street' })}
         />
+        <div className={styles.inputGroup}>
+          <label htmlFor="save-profile">
+            <input {...registerCheckbox('saveProfile', { type: 'checkbox', id: 'save-profile' })} />
+            Save profile?
+          </label>
+        </div>
         <Button disabled={!valid} style={{ marginBottom: 20 }}>
           Submit
         </Button>
