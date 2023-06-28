@@ -22,7 +22,7 @@ export const StepFormTwo: React.FC = () => {
           fontSize: '2.2rem',
         }}
       >
-        <h1>Zod</h1>
+        <h1>Step Form: 2</h1>
         <Button variant="link" href="/step-form-one">
           Back
         </Button>

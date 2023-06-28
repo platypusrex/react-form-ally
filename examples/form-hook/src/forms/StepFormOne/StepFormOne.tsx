@@ -25,7 +25,7 @@ export const StepFormOne: React.FC = () => {
           fontSize: '2.2rem',
         }}
       >
-        <h1>Zod</h1>
+        <h1>Step Form: 1</h1>
       </div>
       <form className="form" onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
         <div className="form-container">
