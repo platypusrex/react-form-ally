@@ -22,7 +22,8 @@ With a familiar and intuitive API, it's super easy to get started with `react-fo
 how to get going without the aid of internal or external validators. For more complex examples, see the various examples
 showcasing custom validators [here](https://github.com/platypusrex/react-form-ally/tree/master/examples/form-hook).
 
-```tsx filename="Login.tsx"
+**Using `useForm`**:
+```tsx filename="Login.tsx - with useForm"
 import { useForm } from '@react-form-ally/hook';
 
 type FormValues = {
@@ -93,3 +94,77 @@ export const Login: React.FC = () => {
 };
 ```
 
+**Using `createFormHook`**:
+```tsx filename="Login.tsx"
+import { createFormHook } from '@react-form-ally/hook';
+
+type FormValues = {
+  email: string;
+  password: string;
+}
+
+const initialValues: FormValues = {
+  email: '',
+  password: '',
+};
+
+// Creates an external store for the persistence of your form's state. No context providers required.
+const useLogin = createFormHook({
+  input: {
+    initialValues,
+    type: 'uncontrolled', // uncontrolled is the default input type
+  },
+  validation: {
+    type: 'change', // change is the default validation type
+    schema: (values) => {
+      const errors = {};
+
+      if (!values.email) {
+        errors.email = 'Email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+        errors.email = 'Invalid email address';
+      }
+
+      if (!values.password) {
+        errors.password = 'Password is required';
+      } else if (values.password.length < 8) {
+        errors.password = 'Password must be at least 8 characters long';
+      }
+
+      return { errors };
+    },
+  },
+})
+
+export const Login: React.FC = () => {
+  const {
+    registerInput,
+    errors,
+    touched,
+    valid,
+    onSubmit,
+    onReset,
+  } = useLogin();
+
+  const handleSubmit = (formValues: FormValues) => {
+    console.log('Submitting form', formValues);
+  };
+
+  return (
+    <form onSubmit={onSubmit(handleSubmit)} onReset={onReset}>
+      <input {...registerInput('email', { type: 'email' })} />
+      {touched.email && errors.email && <div>{errors.email}</div>}
+
+      <input {...registerInput('password', { type: 'password' })} />
+      {touched.password && errors.password && <div>{errors.password}</div>}
+
+      <button type="submit" disabled={!valid}>
+        Submit
+      </button>
+      <button type="reset">
+        Reset
+      </button>
+    </form>
+  );
+};
+```

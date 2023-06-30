@@ -190,6 +190,74 @@ const form = useForm<FormValues>({
 });
 ```
 
+## createFormHook
+The `createFormHook` function accepts the exact same input as `useForm` and returns a fully typed form hook.
+Using the `createFormHook` function allows you to store form state in an external store, persisting that state between
+multiple components without the need of a context provider. Simply initialize, store, import, and use the result from
+`createFormHook`.
+
+```tsx
+import { useForm, createFormHook } from '@react-form-ally/hook';
+
+type FormValues = {
+  email: string;
+  password: string;
+};
+
+const useLogin = createFormHook<FormValues>({
+  input: {
+    initialValues: { email: '', password: '' },
+    type: 'controlled', // defaults to uncontrolled and can be omitted
+  },
+  validation: {
+    type: 'change', // defaults to change and can be omitted
+    debounce: { in: 500, out: 0 },
+    schema: (values) => {
+      return {
+        errors: {
+          email: 'Email is required',
+          password: 'Password is required',
+        },
+      };
+    }
+  }
+});
+
+const StepOne: React.FC = () => {
+  const { touched, errors, registerInput } = useLogin();
+
+  return (
+    <form>
+      <input {...registerInput('email', { type: 'email' })} />
+      {touched.email && errors.email && <div>{errors.email}</div>}
+
+      <a href="/step-two">
+        Next
+      </a>
+    </form>
+  );
+};
+
+const StepTwo: React.FC = () => {
+  const { onSubmit, touched, errors, valid, registerInput } = useLogin();
+
+  const handleSubmit = (formValues: FormValues) => {
+    console.log('Submitting form...', formValues);
+  };
+
+  return (
+    <form onSubmit={onSubmit(handleSubmit)}>
+      <input {...registerInput('password', { type: 'password' })} />
+      {touched.password && errors.password && <div>{errors.password}</div>}
+
+      <button type="submit" disabled={!valid}>
+        Submit
+      </button>
+    </form>
+  );
+};
+```
+
 ## registerInput
 The `registerInput` function is a utility function for registering form fields and their properties in a
 type-safe manner. This should be used to register all input types besides either `checkbox` or `radio`. It takes
