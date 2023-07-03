@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  distDir: 'dist',
 };
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
