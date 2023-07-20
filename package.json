@@ -43,7 +43,7 @@
     "build:packages": "turbo run build --filter=@react-form-ally/*",
     "dev": "turbo run dev",
     "test": "turbo run test --filter=@react-form-ally/*",
-    "lint": "eslint --cache '{packages,examples}/*/{src,test}/**.{ts,tsx,js,md}'",
+    "lint": "eslint '{packages,examples}/*/{src,test}/**.{ts,tsx,js,md}'",
     "lint:ci": "eslint --cache 'packages/*/{src,test}/**.{ts,tsx,js,md}'",
     "lint:fix": "eslint '{packages,examples}/*/{src,test}/**.{ts,tsx,js,md}' --fix",
     "check:types": "yarn turbo run check:types --filter=@react-form-ally/*",
@@ -55,16 +55,16 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.2",
-    "@typescript-eslint/eslint-plugin": "^6.1.0",
-    "@typescript-eslint/parser": "^6.1.0",
-    "eslint": "^8.45.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jest": "^27.2.3",
-    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "prettier": "^3.0.0",
+    "prettier": "^2.8.8",
     "turbo": "latest"
   }
 }
