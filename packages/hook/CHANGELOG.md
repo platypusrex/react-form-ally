@@ -1,5 +1,11 @@
 # @react-form-ally/hook
 
+## 0.5.0
+
+### Minor Changes
+
+- b7d80c3: Adds shim for `useSyncExternalStore` to support consumers using react 16.8 - 17.x.
+
 ## 0.4.0
 
 ### Minor Changes
